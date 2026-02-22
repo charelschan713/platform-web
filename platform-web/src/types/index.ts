@@ -106,3 +106,11 @@ export interface DashboardStats {
   };
   total_revenue: number;
 }
+
+export interface TenantBrand {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url?: string;
+  domain?: string;
+}
