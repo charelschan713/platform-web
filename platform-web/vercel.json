@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "@next_public_api_url",
-      "NEXT_PUBLIC_APP_NAME": "@next_public_app_name"
-    }
-  }
+  "version": 2
 }
