@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
@@ -186,6 +187,116 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+      {/* API Tokens */}
+      <ApiTokensCard />
     </div>
+  );
+}
+
+function ApiTokensCard() {
+  const [newTokenName, setNewTokenName] = useState('');
+  const [newToken, setNewToken] = useState('');
+  const queryClient = useQueryClient();
+
+  const { data: tokens = [] } = useQuery({
+    queryKey: ['api-tokens'],
+    queryFn: async () => {
+      const res = await api.get('/tenants/me/tokens');
+      return res.data;
+    },
+  });
+
+  const createTokenMutation = useMutation({
+    mutationFn: (name: string) => api.post('/tenants/me/tokens', { name }),
+    onSuccess: (res) => {
+      setNewToken(res.data.token);
+      setNewTokenName('');
+      queryClient.invalidateQueries({ queryKey: ['api-tokens'] });
+    },
+  });
+
+  const revokeTokenMutation = useMutation({
+    mutationFn: (token_id: string) =>
+      api.delete(`/tenants/me/tokens/${token_id}`),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['api-tokens'] }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">API Keys</CardTitle>
+        <CardDescription>
+          Use these keys to integrate booking into your own website
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Key name (e.g. My Website)"
+            value={newTokenName}
+            onChange={(e) => setNewTokenName(e.target.value)}
+          />
+          <Button
+            onClick={() => createTokenMutation.mutate(newTokenName)}
+            disabled={!newTokenName || createTokenMutation.isPending}
+          >
+            Generate
+          </Button>
+        </div>
+
+        {newToken && (
+          <div className="bg-gray-900 text-green-400 rounded-lg p-3 font-mono text-xs break-all">
+            <p className="text-gray-400 mb-1">
+              ⚠️ Copy now — won&apos;t be shown again
+            </p>
+            {newToken}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(newToken);
+                setNewToken('');
+              }}
+              className="block mt-2 text-blue-400 hover:underline"
+            >
+              Copy &amp; Dismiss
+            </button>
+          </div>
+        )}
+
+        <a
+          href={`${process.env.NEXT_PUBLIC_API_URL}/docs`}
+          target="_blank"
+          className="text-sm text-blue-600 hover:underline block"
+        >
+          View API Documentation →
+        </a>
+
+        <div className="space-y-2">
+          {tokens.map((token: any) => (
+            <div
+              key={token.id}
+              className="flex items-center justify-between p-3 border rounded-lg"
+            >
+              <div>
+                <p className="text-sm font-medium">{token.name}</p>
+                <p className="text-xs text-gray-400">
+                  {token.last_used_at
+                    ? `Last used ${new Date(token.last_used_at).toLocaleDateString()}`
+                    : 'Never used'}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => revokeTokenMutation.mutate(token.id)}
+                disabled={revokeTokenMutation.isPending}
+              >
+                <span className="text-red-400 text-xs">Revoke</span>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
