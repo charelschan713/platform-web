@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   Car,
-  MapPin,
+  BookOpen,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -22,7 +23,8 @@ const navItems = [
   { href: '/bookings', label: 'Bookings', icon: Calendar },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
   { href: '/vehicle-types', label: 'Vehicle Types', icon: Car },
-  { href: '/service-cities', label: 'Service Cities', icon: MapPin },
+  { href: '/constants', label: 'Dictionary', icon: BookOpen },
+  { href: '/service-cities', label: 'Service Cities', icon: Map },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

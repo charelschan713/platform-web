@@ -4,15 +4,17 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Edit2, Check } from 'lucide-react';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+import { Trash2, Plus, Edit2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const PLATFORM_CLASSES = [
   { code: 'BUSINESS', label: 'Business Class', icon: '🚗' },
@@ -21,34 +23,15 @@ const PLATFORM_CLASSES = [
   { code: 'ELECTRIC', label: 'Electric', icon: '⚡' },
 ];
 
-interface VehicleType {
-  id: string;
-  name: string;
-  description: string | null;
-  allowed_platform_classes: string[];
-  sort_order: number;
-  is_active: boolean;
-}
-
 export default function VehicleTypesPage() {
   const queryClient = useQueryClient();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
-  // 获取平台车型
-  const { data: platformClasses = [] } = useQuery({
-    queryKey: ['platform-classes'],
-    queryFn: async () => {
-      const res = await api.get('/tenants/vehicle-classes');
-      return res.data;
-    },
-  });
-
-  // 获取租户自定义车型
-  const { data: vehicleTypes = [], isLoading } = useQuery<VehicleType[]>({
+  const { data: types = [] } = useQuery({
     queryKey: ['vehicle-types'],
     queryFn: async () => {
       const res = await api.get('/tenants/me/vehicle-types');
@@ -57,7 +40,7 @@ export default function VehicleTypesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (dto: any) => api.post('/tenants/me/vehicle-types', dto),
+    mutationFn: (data: any) => api.post('/tenants/me/vehicle-types', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
       resetForm();
@@ -65,8 +48,7 @@ export default function VehicleTypesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: any }) =>
-      api.patch(`/tenants/me/vehicle-types/${id}`, dto),
+    mutationFn: ({ id, ...data }: any) => api.patch(`/tenants/me/vehicle-types/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
       resetForm();
@@ -74,90 +56,78 @@ export default function VehicleTypesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.delete(`/tenants/me/vehicle-types/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
-    },
+    mutationFn: (id: string) => api.delete(`/tenants/me/vehicle-types/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vehicle-types'] }),
   });
 
-  function resetForm() {
-    setDialogOpen(false);
-    setEditingId(null);
+  const resetForm = () => {
+    setOpen(false);
+    setEditing(null);
     setName('');
     setDescription('');
     setSelectedClasses([]);
-  }
+  };
 
-  function openCreate() {
-    resetForm();
-    setDialogOpen(true);
-  }
+  const openEdit = (type: any) => {
+    setEditing(type);
+    setName(type.name);
+    setDescription(type.description ?? '');
+    setSelectedClasses(type.allowed_platform_classes);
+    setOpen(true);
+  };
 
-  function openEdit(vt: VehicleType) {
-    setEditingId(vt.id);
-    setName(vt.name);
-    setDescription(vt.description ?? '');
-    setSelectedClasses(vt.allowed_platform_classes);
-    setDialogOpen(true);
-  }
-
-  function toggleClass(code: string) {
+  const toggleClass = (code: string) => {
     setSelectedClasses((prev) =>
-      prev.includes(code)
-        ? prev.filter((c) => c !== code)
-        : [...prev, code],
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
     );
-  }
+  };
 
-  function handleSubmit() {
-    const dto = {
+  const handleSave = () => {
+    const payload = {
       name,
-      description: description || undefined,
+      description,
       allowed_platform_classes: selectedClasses,
     };
 
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, dto });
+    if (editing) {
+      updateMutation.mutate({ id: editing.id, ...payload });
     } else {
-      createMutation.mutate(dto);
+      createMutation.mutate(payload);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Vehicle Types</h1>
-          <p className="text-muted-foreground">
-            Define your custom vehicle types and map them to platform classes
+          <p className="text-sm text-gray-500 mt-1">
+            Define your service categories and map to platform vehicle classes
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Vehicle Type
+        <Button onClick={() => setOpen(true)}>
+          <Plus size={16} className="mr-2" /> Add Vehicle Type
         </Button>
       </div>
 
-      {/* Platform Classes Reference */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Platform Vehicle Classes</CardTitle>
+          <CardTitle className="text-sm text-gray-500 uppercase tracking-wide">
+            Platform Standard Classes
+          </CardTitle>
           <CardDescription>
-            Standard classes defined by the platform. Map your custom types to these.
+            These are the platform&apos;s standard vehicle categories. Map your custom
+            types to these.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {PLATFORM_CLASSES.map((pc) => (
-              <div
-                key={pc.code}
-                className="flex items-center gap-2 rounded-lg border p-3"
-              >
-                <span className="text-2xl">{pc.icon}</span>
+              <div key={pc.code} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
+                <span className="text-xl">{pc.icon}</span>
                 <div>
-                  <p className="font-medium text-sm">{pc.label}</p>
-                  <p className="text-xs text-muted-foreground">{pc.code}</p>
+                  <p className="text-xs font-semibold">{pc.code}</p>
+                  <p className="text-xs text-gray-400">{pc.label}</p>
                 </div>
               </div>
             ))}
@@ -165,59 +135,65 @@ export default function VehicleTypesPage() {
         </CardContent>
       </Card>
 
-      {/* Tenant Vehicle Types */}
-      {isLoading ? (
-        <p className="text-muted-foreground">Loading...</p>
-      ) : vehicleTypes.length === 0 ? (
+      {types.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            No custom vehicle types yet. Click &quot;Add Vehicle Type&quot; to create one.
+          <CardContent className="text-center py-16">
+            <p className="text-4xl mb-4">🚗</p>
+            <p className="font-medium text-gray-600">No vehicle types yet</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Create your first vehicle type to start accepting bookings
+            </p>
+            <Button className="mt-4" onClick={() => setOpen(true)}>
+              <Plus size={16} className="mr-2" /> Add Vehicle Type
+            </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {vehicleTypes.map((vt) => (
-            <Card key={vt.id}>
-              <CardHeader className="pb-3">
+        <div className="space-y-3">
+          {types.map((type: any) => (
+            <Card key={type.id}>
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{vt.name}</CardTitle>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(vt)}
-                    >
-                      <Edit2 className="h-4 w-4" />
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{type.name}</h3>
+                      {!type.is_active && (
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
+                    {type.description && (
+                      <p className="text-sm text-gray-500">{type.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-gray-400">Served by:</span>
+                      {type.allowed_platform_classes.map((cls: string) => {
+                        const pc = PLATFORM_CLASSES.find((p) => p.code === cls);
+                        return (
+                          <span
+                            key={cls}
+                            className="flex items-center gap-1 text-xs bg-gray-900 text-white px-2 py-0.5 rounded-full"
+                          >
+                            {pc?.icon} {cls}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex gap-1 ml-4">
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(type)}>
+                      <Edit2 size={14} />
                     </Button>
                     <Button
+                      size="sm"
                       variant="ghost"
-                      size="icon"
-                      onClick={() => deleteMutation.mutate(vt.id)}
+                      onClick={() => deleteMutation.mutate(type.id)}
+                      disabled={deleteMutation.isPending}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 size={14} className="text-red-400" />
                     </Button>
                   </div>
-                </div>
-                {vt.description && (
-                  <CardDescription>{vt.description}</CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Mapped platform classes:
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {vt.allowed_platform_classes.map((cls) => {
-                    const pc = PLATFORM_CLASSES.find((p) => p.code === cls);
-                    return (
-                      <span
-                        key={cls}
-                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
-                      >
-                        {pc?.icon} {pc?.label ?? cls}
-                      </span>
-                    );
-                  })}
                 </div>
               </CardContent>
             </Card>
@@ -225,34 +201,37 @@ export default function VehicleTypesPage() {
         </div>
       )}
 
-      {/* Create / Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) resetForm();
+        }}
+      >
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingId ? 'Edit Vehicle Type' : 'New Vehicle Type'}
-            </DialogTitle>
+            <DialogTitle>{editing ? 'Edit Vehicle Type' : 'Add Vehicle Type'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Name</Label>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1">
+              <Label>Name *</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Mercedes S-Class"
+                placeholder="e.g. Luxury Sedan, Airport Transfer"
               />
             </div>
-            <div>
+            <div className="space-y-1">
               <Label>Description (optional)</Label>
               <Input
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g. Premium luxury sedan"
+                placeholder="e.g. Premium door-to-door service"
               />
             </div>
-            <div>
-              <Label className="mb-2 block">
-                Allowed Platform Classes
+            <div className="space-y-2">
+              <Label>
+                Served by Platform Classes *
+                <span className="text-gray-400 font-normal ml-1">(select all that apply)</span>
               </Label>
               <div className="grid grid-cols-2 gap-2">
                 {PLATFORM_CLASSES.map((pc) => {
@@ -262,31 +241,42 @@ export default function VehicleTypesPage() {
                       key={pc.code}
                       type="button"
                       onClick={() => toggleClass(pc.code)}
-                      className={`flex items-center gap-2 rounded-lg border p-3 text-left transition-colors ${
+                      className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-all ${
                         selected
-                          ? 'border-primary bg-primary/10'
-                          : 'hover:bg-muted'
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 hover:border-gray-400 bg-white'
                       }`}
                     >
-                      {selected && <Check className="h-4 w-4 text-primary" />}
-                      <span>{pc.icon}</span>
-                      <span className="text-sm">{pc.label}</span>
+                      <span className="text-lg">{pc.icon}</span>
+                      <div>
+                        <p className="text-xs font-semibold">{pc.code}</p>
+                        <p className={`text-xs ${selected ? 'text-gray-300' : 'text-gray-400'}`}>
+                          {pc.label}
+                        </p>
+                      </div>
                     </button>
                   );
                 })}
               </div>
+              {selectedClasses.length === 0 && (
+                <p className="text-xs text-red-500">⚠️ Select at least one platform class</p>
+              )}
             </div>
             <Button
               className="w-full"
-              onClick={handleSubmit}
               disabled={
-                !name.trim() ||
+                !name ||
                 selectedClasses.length === 0 ||
                 createMutation.isPending ||
                 updateMutation.isPending
               }
+              onClick={handleSave}
             >
-              {editingId ? 'Update' : 'Create'}
+              {createMutation.isPending || updateMutation.isPending
+                ? 'Saving...'
+                : editing
+                ? 'Save Changes'
+                : 'Create Vehicle Type'}
             </Button>
           </div>
         </DialogContent>
