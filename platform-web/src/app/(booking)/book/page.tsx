@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MapPin, Clock, Users, Plane, Plus, X, ArrowRight } from 'lucide-react';
+import { ContactSearch } from '@/components/crm/ContactSearch';
+import { PassengerSearch } from '@/components/crm/PassengerSearch';
 
 const SERVICE_TYPES = [
   { value: 'POINT_TO_POINT', label: 'Point to Point' },
@@ -46,6 +48,10 @@ export default function BookPage() {
   const [flight_number, setFlightNumber] = useState('');
   const [special_requests, setSpecialRequests] = useState('');
   const [promo_code, setPromoCode] = useState('');
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [selectedPassenger, setSelectedPassenger] = useState<any>(null);
+  const [contact_id, setContactId] = useState('');
+  const [crm_passenger_id, setCrmPassengerId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: serviceCities = [] } = useQuery({
@@ -96,6 +102,8 @@ export default function BookPage() {
       flight_number,
       special_requests,
       promo_code,
+      contact_id,
+      crm_passenger_id,
       city_name: city?.city_name ?? '',
       timezone: city?.timezone ?? '',
       currency: city?.currency ?? 'AUD',
@@ -325,6 +333,36 @@ export default function BookPage() {
               {errors.dropoff_address && (
                 <p className="text-xs text-red-500">{errors.dropoff_address}</p>
               )}
+            </div>
+
+            {/* CRM Search */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="space-y-1">
+                <Label>Contact (Who's booking)</Label>
+                <ContactSearch
+                  selected={selectedContact}
+                  onSelect={(c) => {
+                    setSelectedContact(c);
+                    setContactId(c?.id ?? '');
+                  }}
+                  placeholder="Search existing contacts..."
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Passenger (Who's riding)</Label>
+                <PassengerSearch
+                  selected={selectedPassenger}
+                  onSelect={(p) => {
+                    setSelectedPassenger(p);
+                    setCrmPassengerId(p?.id ?? '');
+                    if (p) {
+                      setPassengerName(`${p.first_name} ${p.last_name ?? ''}`.trim());
+                      if (p.phone) setPassengerPhone(p.phone);
+                    }
+                  }}
+                  placeholder="Search existing passengers..."
+                />
+              </div>
             </div>
 
             {/* Passenger Details */}

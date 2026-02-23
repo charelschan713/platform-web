@@ -109,6 +109,8 @@ export default function ConfirmPage() {
   const flight_number = searchParams.get('flight_number') ?? '';
   const special_requests = searchParams.get('special_requests') ?? '';
   const promo_code = searchParams.get('promo_code') ?? '';
+  const contact_id = searchParams.get('contact_id') ?? '';
+  const crm_passenger_id = searchParams.get('crm_passenger_id') ?? '';
   const city_name = searchParams.get('city_name') ?? '';
   const timezone = searchParams.get('timezone') ?? 'Australia/Sydney';
   const currency = searchParams.get('currency') ?? 'AUD';
@@ -156,6 +158,8 @@ export default function ConfirmPage() {
         flight_number: flight_number || undefined,
         special_requests: special_requests || undefined,
         promo_code: promo_code || undefined,
+        contact_id: contact_id || undefined,
+        crm_passenger_id: crm_passenger_id || undefined,
       };
 
       if (service_type === 'HOURLY_CHARTER' && duration_hours) {
