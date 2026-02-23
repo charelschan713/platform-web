@@ -183,6 +183,9 @@ export default function SettingsPage() {
           <TabsTrigger value="api-keys" className="flex-1">
             API Keys
           </TabsTrigger>
+          <TabsTrigger value="webhooks" className="flex-1">
+            Webhooks
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -536,6 +539,20 @@ export default function SettingsPage() {
               </p>
               <Button className="w-full" variant="outline" onClick={() => router.push('/settings/api-keys')}>
                 🔑 Manage API Keys →
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="webhooks">
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <p className="text-sm text-gray-600">
+                Configure webhook endpoints to receive real-time event notifications when bookings,
+                payments, or drivers are updated.
+              </p>
+              <Button className="w-full" variant="outline" onClick={() => router.push('/settings/webhooks')}>
+                🔗 Manage Webhooks →
               </Button>
             </CardContent>
           </Card>
