@@ -13,6 +13,7 @@ import {
   BookOpen,
   Map,
   Receipt,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/bookings', label: 'Bookings', icon: Calendar },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
+  { href: '/connections', label: 'Network', icon: Network },
   { href: '/vehicle-types', label: 'Vehicle Types', icon: Car },
   { href: '/constants', label: 'Dictionary', icon: BookOpen },
   { href: '/service-cities', label: 'Service Cities', icon: Map },
