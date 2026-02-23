@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import platformApi from '@/lib/platformApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,7 +72,7 @@ export default function VehicleTypesPage() {
   const { data: platformVehicles = [] } = useQuery<PlatformVehicle[]>({
     queryKey: ['platform-vehicles'],
     queryFn: async () => {
-      const res = await api.get('/platform-vehicles');
+      const res = await platformApi.get('/platform-vehicles');
       return res.data;
     },
   });
