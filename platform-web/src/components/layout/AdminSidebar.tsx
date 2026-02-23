@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Building2, DollarSign, LogOut } from 'lucide-react';
+import { LayoutDashboard, Building2, Car, DollarSign, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
@@ -10,6 +10,7 @@ import api from '@/lib/api';
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
+  { href: '/admin/vehicles', label: 'Vehicle Library', icon: Car },
   { href: '/admin/revenue', label: 'Revenue', icon: DollarSign },
 ];
 
