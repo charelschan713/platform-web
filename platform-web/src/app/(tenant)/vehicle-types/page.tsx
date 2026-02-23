@@ -21,6 +21,7 @@ type VehicleType = {
   type_name: string;
   description?: string;
   max_luggage: number;
+  max_passengers?: number;
   base_fare: number;
   per_km_rate: number;
   per_minute_rate?: number;
@@ -40,6 +41,7 @@ const EMPTY_FORM = {
   type_name: '',
   description: '',
   max_luggage: 2,
+  max_passengers: 4,
   base_fare: 0,
   per_km_rate: 0,
   per_minute_rate: 0,
@@ -117,6 +119,7 @@ export default function VehicleTypesPage() {
       type_name: vt.type_name,
       description: vt.description ?? '',
       max_luggage: vt.max_luggage,
+      max_passengers: vt.max_passengers ?? 4,
       base_fare: vt.base_fare,
       per_km_rate: vt.per_km_rate,
       per_minute_rate: vt.per_minute_rate ?? 0,
@@ -210,6 +213,16 @@ export default function VehicleTypesPage() {
                   min={0}
                   value={form.max_luggage}
                   onChange={(e) => setForm((p) => ({ ...p, max_luggage: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Max Passengers *</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={form.max_passengers ?? 4}
+                  onChange={(e) => setForm((p) => ({ ...p, max_passengers: parseInt(e.target.value) || 4 }))}
                 />
               </div>
               <div className="space-y-1">
@@ -454,7 +467,7 @@ export default function VehicleTypesPage() {
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-500">🧳 Max {vt.max_luggage} luggage</p>
+                <p className="text-sm text-gray-500">👥 Max {vt.max_passengers ?? 4} passengers · 🧳 Max {vt.max_luggage} luggage</p>
 
                 <div>
                   <p className="text-xs text-gray-400 mb-2">VEHICLES ({vt.vehicles.length})</p>
