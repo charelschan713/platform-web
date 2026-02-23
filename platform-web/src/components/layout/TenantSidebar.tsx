@@ -12,6 +12,7 @@ import {
   Map,
   Receipt,
   Network,
+  BarChart2,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/vehicle-types', label: 'Vehicle Types', icon: Car },
   { href: '/service-cities', label: 'Service Cities', icon: Map },
   { href: '/constants', label: 'Dictionary', icon: BookOpen },
+  { href: '/reports', label: 'Reports', icon: BarChart2 },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
   { href: '/connections', label: 'Network', icon: Network },
   { href: '/settings', label: 'Settings', icon: Settings },

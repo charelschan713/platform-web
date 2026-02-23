@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [saved, setSaved] = useState('');
 
@@ -177,6 +179,9 @@ export default function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="security" className="flex-1">
             Security
+          </TabsTrigger>
+          <TabsTrigger value="api-keys" className="flex-1">
+            API Keys
           </TabsTrigger>
         </TabsList>
 
@@ -519,6 +524,18 @@ export default function SettingsPage() {
                 }
               >
                 {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="api-keys">
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <p className="text-sm text-gray-600">
+                Create and manage API keys for integrating the booking system into your website or app.
+              </p>
+              <Button className="w-full" variant="outline" onClick={() => router.push('/settings/api-keys')}>
+                🔑 Manage API Keys →
               </Button>
             </CardContent>
           </Card>
