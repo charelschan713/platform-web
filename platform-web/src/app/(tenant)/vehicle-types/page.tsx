@@ -23,6 +23,9 @@ type VehicleType = {
   max_luggage: number;
   base_fare: number;
   per_km_rate: number;
+  per_minute_rate?: number;
+  included_km_per_hour?: number;
+  extra_km_rate?: number;
   hourly_rate: number;
   minimum_fare: number;
   currency: string;
@@ -39,6 +42,9 @@ const EMPTY_FORM = {
   max_luggage: 2,
   base_fare: 0,
   per_km_rate: 0,
+  per_minute_rate: 0,
+  included_km_per_hour: 0,
+  extra_km_rate: 0,
   hourly_rate: 0,
   minimum_fare: 0,
   currency: 'AUD',
@@ -113,6 +119,9 @@ export default function VehicleTypesPage() {
       max_luggage: vt.max_luggage,
       base_fare: vt.base_fare,
       per_km_rate: vt.per_km_rate,
+      per_minute_rate: vt.per_minute_rate ?? 0,
+      included_km_per_hour: vt.included_km_per_hour ?? 0,
+      extra_km_rate: vt.extra_km_rate ?? 0,
       hourly_rate: vt.hourly_rate,
       minimum_fare: vt.minimum_fare,
       currency: vt.currency,
@@ -227,13 +236,56 @@ export default function VehicleTypesPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>Per KM Rate</Label>
+                  <Label>
+                    Per KM Rate ($)
+                    <span className="text-xs text-gray-400 ml-1">0 = disabled</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    value={form.per_km_rate}
+                    onChange={(e) => setForm((p) => ({ ...p, per_km_rate: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>
+                    Per Minute Rate ($)
+                    <span className="text-xs text-gray-400 ml-1">0 = disabled</span>
+                  </Label>
                   <Input
                     type="number"
                     min={0}
                     step={0.01}
-                    value={form.per_km_rate}
-                    onChange={(e) => setForm((p) => ({ ...p, per_km_rate: parseFloat(e.target.value) }))}
+                    value={form.per_minute_rate ?? 0}
+                    onChange={(e) => setForm((p) => ({ ...p, per_minute_rate: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>
+                    Included KM per Hour
+                    <span className="text-xs text-gray-400 ml-1">0 = unlimited</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.included_km_per_hour ?? 0}
+                    onChange={(e) => setForm((p) => ({ ...p, included_km_per_hour: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Extra KM Rate ($)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    value={form.extra_km_rate ?? 0}
+                    onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0"
                   />
                 </div>
                 <div className="space-y-1">
@@ -243,7 +295,7 @@ export default function VehicleTypesPage() {
                     min={0}
                     step={0.01}
                     value={form.hourly_rate}
-                    onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) }))}
+                    onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))}
                   />
                 </div>
                 <div className="space-y-1">

@@ -16,6 +16,9 @@ type VehicleType = {
   max_luggage: number;
   base_fare: number;
   per_km_rate: number;
+  per_minute_rate?: number;
+  included_km_per_hour?: number;
+  extra_km_rate?: number;
   hourly_rate: number;
   minimum_fare: number;
   currency: string;
@@ -38,9 +41,15 @@ type QuoteResult = {
   currency: string;
   base_fare: number;
   per_km_rate: number;
+  per_minute_rate?: number;
   hourly_rate: number;
   minimum_fare: number;
   max_luggage: number;
+  billing_options?: {
+    method: 'KM' | 'DT' | 'HOURLY';
+    fare: number;
+    label: string;
+  }[];
 };
 
 export default function QuotePage() {
@@ -50,6 +59,8 @@ export default function QuotePage() {
     useState<string>('');
   const [quotes, setQuotes] = useState<QuoteResult[]>([]);
   const [loadingQuotes, setLoadingQuotes] = useState(false);
+  const [selectedBillingMethod, setSelectedBillingMethod] =
+    useState<Record<string, string>>({});
 
   // 从 URL 拿参数
   const service_city_id =
@@ -66,6 +77,7 @@ export default function QuotePage() {
     parseFloat(searchParams.get('distance_km') ?? '0');
   const duration_hours =
     parseFloat(searchParams.get('duration_hours') ?? '0');
+  const duration_minutes = Math.round(duration_hours * 60);
   const tenant_slug =
     searchParams.get('tenant_slug') ?? '';
 
@@ -90,19 +102,68 @@ export default function QuotePage() {
     const calculated: QuoteResult[] = vehicleTypes
       .filter(vt => vt.is_active)
       .map(vt => {
-        let fare = vt.base_fare ?? 0;
-
         if (
-          service_type === 'POINT_TO_POINT' &&
-          distance_km > 0
+          service_type === 'POINT_TO_POINT' ||
+          service_type === 'AIRPORT_PICKUP' ||
+          service_type === 'AIRPORT_DROPOFF'
         ) {
-          fare += distance_km * (vt.per_km_rate ?? 0);
-        } else if (
-          service_type === 'HOURLY_CHARTER' &&
-          duration_hours > 0
-        ) {
-          fare = duration_hours * (vt.hourly_rate ?? 0);
+          const km_fare = vt.per_km_rate > 0
+            ? vt.base_fare + (distance_km * vt.per_km_rate)
+            : null;
+
+          const dt_fare = (vt.per_minute_rate ?? 0) > 0
+            ? vt.base_fare + (duration_minutes * (vt.per_minute_rate ?? 0))
+            : null;
+
+          const billing_options = [
+            ...(km_fare ? [{
+              method: 'KM' as const,
+              fare: parseFloat(km_fare.toFixed(2)),
+              label: `${distance_km}km × $${vt.per_km_rate}/km`,
+            }] : []),
+            ...(dt_fare ? [{
+              method: 'DT' as const,
+              fare: parseFloat(dt_fare.toFixed(2)),
+              label: `${duration_minutes}min × $${vt.per_minute_rate}/min`,
+            }] : []),
+          ];
+
+          const estimated_fare = km_fare && dt_fare
+            ? Math.min(km_fare, dt_fare)
+            : (km_fare ?? dt_fare ?? vt.base_fare ?? 0);
+
+          return {
+            vehicle_type_id: vt.id,
+            type_name: vt.type_name,
+            estimated_fare: parseFloat(estimated_fare.toFixed(2)),
+            currency: vt.currency,
+            base_fare: vt.base_fare,
+            per_km_rate: vt.per_km_rate,
+            per_minute_rate: vt.per_minute_rate ?? 0,
+            hourly_rate: vt.hourly_rate,
+            minimum_fare: vt.minimum_fare,
+            max_luggage: vt.max_luggage,
+            billing_options,
+          };
         }
+
+        let fare = vt.base_fare ?? 0;
+        let extra_km_charge = 0;
+
+        if (service_type === 'HOURLY_CHARTER' && duration_hours > 0) {
+          fare = duration_hours * (vt.hourly_rate ?? 0);
+          if (
+            (vt.included_km_per_hour ?? 0) > 0 &&
+            (vt.extra_km_rate ?? 0) > 0 &&
+            distance_km > 0
+          ) {
+            const included_km = duration_hours * (vt.included_km_per_hour ?? 0);
+            const extra_km = Math.max(0, distance_km - included_km);
+            extra_km_charge = extra_km * (vt.extra_km_rate ?? 0);
+          }
+        }
+
+        fare += extra_km_charge;
 
         if (
           vt.minimum_fare &&
@@ -118,9 +179,19 @@ export default function QuotePage() {
           currency: vt.currency,
           base_fare: vt.base_fare,
           per_km_rate: vt.per_km_rate,
+          per_minute_rate: vt.per_minute_rate ?? 0,
           hourly_rate: vt.hourly_rate,
           minimum_fare: vt.minimum_fare,
           max_luggage: vt.max_luggage,
+          billing_options: [{
+            method: 'HOURLY',
+            fare: parseFloat(fare.toFixed(2)),
+            label: `${duration_hours}hr × $${vt.hourly_rate}/hr${
+              extra_km_charge > 0
+                ? ` + $${extra_km_charge.toFixed(2)} extra km`
+                : ''
+            }`,
+          }],
         };
       });
 
@@ -130,6 +201,12 @@ export default function QuotePage() {
 
   const handleSelect = (quote: QuoteResult) => {
     setSelectedTypeId(quote.vehicle_type_id);
+    if (quote.billing_options?.length) {
+      setSelectedBillingMethod((prev) => ({
+        ...prev,
+        [quote.vehicle_type_id]: prev[quote.vehicle_type_id] ?? quote.billing_options?.[0]?.method ?? 'KM',
+      }));
+    }
   };
 
   const handleContinue = () => {
@@ -139,6 +216,17 @@ export default function QuotePage() {
     );
     if (!selected) return;
 
+    const billing_method =
+      selectedBillingMethod[selected.vehicle_type_id]
+      ?? selected.billing_options?.[0]?.method
+      ?? 'KM';
+
+    const selected_option = selected.billing_options?.find(
+      (option) => option.method === billing_method,
+    );
+
+    const final_estimated_fare = selected_option?.fare ?? selected.estimated_fare;
+
     const params = new URLSearchParams({
       service_city_id,
       service_type,
@@ -147,7 +235,8 @@ export default function QuotePage() {
       pickup_datetime,
       vehicle_type_id: selected.vehicle_type_id,
       type_name: selected.type_name,
-      estimated_fare: selected.estimated_fare.toString(),
+      estimated_fare: final_estimated_fare.toString(),
+      billing_method,
       currency: selected.currency,
       distance_km: distance_km.toString(),
       duration_hours: duration_hours.toString(),
@@ -271,7 +360,11 @@ export default function QuotePage() {
                       <div className="text-right">
                         <p className="text-2xl font-bold">
                           {quote.currency} $
-                          {quote.estimated_fare.toFixed(2)}
+                          {(
+                            quote.billing_options?.find(
+                              (option) => option.method === selectedBillingMethod[quote.vehicle_type_id],
+                            )?.fare ?? quote.estimated_fare
+                          ).toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-400">
                           estimated
@@ -303,6 +396,50 @@ export default function QuotePage() {
                       </div>
                     )}
 
+                    {quote.billing_options?.length && quote.billing_options.length > 1 ? (
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-500 font-medium">
+                          Choose billing method:
+                        </p>
+                        {quote.billing_options.map((option) => (
+                          <button
+                            key={option.method}
+                            type="button"
+                            className={`w-full text-left p-2 rounded-lg border text-sm transition-all ${
+                              selectedBillingMethod[quote.vehicle_type_id] === option.method
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBillingMethod((prev) => ({
+                                ...prev,
+                                [quote.vehicle_type_id]: option.method,
+                              }));
+                            }}
+                          >
+                            <div className="flex justify-between">
+                              <span className="font-medium">
+                                {option.method === 'KM'
+                                  ? '📍 By Distance'
+                                  : '⏱️ By Time'}
+                              </span>
+                              <span className="font-bold">
+                                {quote.currency} ${option.fare.toFixed(2)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {option.label}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-400">
+                        {quote.billing_options?.[0]?.label}
+                      </div>
+                    )}
+
                     {/* Pricing breakdown */}
                     <div className="text-xs text-gray-400 flex gap-3">
                       {quote.base_fare > 0 && (
@@ -313,6 +450,11 @@ export default function QuotePage() {
                       {quote.per_km_rate > 0 && (
                         <span>
                           ${quote.per_km_rate.toFixed(2)}/km
+                        </span>
+                      )}
+                      {(quote.per_minute_rate ?? 0) > 0 && (
+                        <span>
+                          ${(quote.per_minute_rate ?? 0).toFixed(2)}/min
                         </span>
                       )}
                       {quote.hourly_rate > 0 && (
