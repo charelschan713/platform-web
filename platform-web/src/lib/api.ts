@@ -1,16 +1,11 @@
 import axios from 'axios';
 
-const api_base_url =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://chauffeur-saas-production.up.railway.app';
-
 const api = axios.create({
-  baseURL: api_base_url,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
+  withCredentials: false,
 });
 
+// 自动注入JWT token
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
@@ -21,39 +16,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// 401自动跳转登录
 api.interceptors.response.use(
   (res) => res,
-  async (error) => {
-    const original = error.config;
-
-    if (error.response?.status === 401 && !original?._retry) {
-      original._retry = true;
-      try {
-        const refresh_token =
-          typeof window !== 'undefined'
-            ? localStorage.getItem('refresh_token')
-            : null;
-
-        const { data } = await axios.post(`${api_base_url}/auth/refresh`, {
-          refresh_token,
-        });
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('refresh_token', data.refresh_token);
-        }
-
-        original.headers.Authorization = `Bearer ${data.access_token}`;
-        return api(original);
-      } catch {
-        if (typeof window !== 'undefined') {
-          localStorage.clear();
-          window.location.href = '/login';
-        }
+  (err) => {
+    if (err.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
       }
     }
-
-    return Promise.reject(error);
+    return Promise.reject(err);
   },
 );
 
