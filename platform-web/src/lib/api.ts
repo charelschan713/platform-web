@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const api_base_url =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://chauffeur-saas-production.up.railway.app';
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: api_base_url,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,10 +34,9 @@ api.interceptors.response.use(
             ? localStorage.getItem('refresh_token')
             : null;
 
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-          { refresh_token },
-        );
+        const { data } = await axios.post(`${api_base_url}/auth/refresh`, {
+          refresh_token,
+        });
 
         if (typeof window !== 'undefined') {
           localStorage.setItem('access_token', data.access_token);
