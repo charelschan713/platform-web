@@ -114,6 +114,7 @@ export default function ConfirmPage() {
   const city_name = searchParams.get('city_name') ?? '';
   const timezone = searchParams.get('timezone') ?? 'Australia/Sydney';
   const currency = searchParams.get('currency') ?? 'AUD';
+  const billing_method = searchParams.get('billing_method') ?? 'KM';
   const fare = parseFloat(searchParams.get('fare') ?? '0');
   const surcharge_amount = parseFloat(searchParams.get('surcharge_amount') ?? '0');
   const surcharge_percentage = parseFloat(searchParams.get('surcharge_percentage') ?? '0');
@@ -158,6 +159,7 @@ export default function ConfirmPage() {
         flight_number: flight_number || undefined,
         special_requests: special_requests || undefined,
         promo_code: promo_code || undefined,
+        billing_method,
         contact_id: contact_id || undefined,
         crm_passenger_id: crm_passenger_id || undefined,
       };
