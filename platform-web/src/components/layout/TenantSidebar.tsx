@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
+  CalendarDays,
   Users,
-  Calendar,
-  DollarSign,
-  Settings,
-  LogOut,
   Car,
+  DollarSign,
   BookOpen,
   Map,
   Receipt,
   Network,
+  Settings,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -21,14 +21,15 @@ import api from '@/lib/api';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/bookings', label: 'Bookings', icon: CalendarDays },
   { href: '/drivers', label: 'Drivers', icon: Users },
-  { href: '/bookings', label: 'Bookings', icon: Calendar },
+  { href: '/vehicles', label: 'Vehicles', icon: Car },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
+  { href: '/vehicle-types', label: 'Vehicle Types', icon: Car },
+  { href: '/service-cities', label: 'Service Cities', icon: Map },
+  { href: '/constants', label: 'Dictionary', icon: BookOpen },
   { href: '/invoices', label: 'Invoices', icon: Receipt },
   { href: '/connections', label: 'Network', icon: Network },
-  { href: '/vehicle-types', label: 'Vehicle Types', icon: Car },
-  { href: '/constants', label: 'Dictionary', icon: BookOpen },
-  { href: '/service-cities', label: 'Service Cities', icon: Map },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
