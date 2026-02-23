@@ -180,7 +180,7 @@ export default function PassengerBookingDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Vehicle</span>
-              <span>{booking.vehicle_class}</span>
+              <span>{booking.vehicle_type_name ?? "-"}</span>
             </div>
             {booking.flight_number && (
               <div className="flex justify-between">

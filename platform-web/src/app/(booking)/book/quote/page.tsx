@@ -8,17 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Clock, MapPin } from 'lucide-react';
 
-const CLASS_ICONS: Record<string, string> = {
-  BUSINESS: '🚗',
-  FIRST: '🏆',
-  VAN: '🚐',
-  ELECTRIC: '⚡',
-};
-
 export default function QuotePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedTypeId, setSelectedTypeId] = useState('');
 
   const service_city_id = searchParams.get('service_city_id') ?? '';
   const service_type = searchParams.get('service_type') ?? 'POINT_TO_POINT';
@@ -82,10 +75,11 @@ export default function QuotePage() {
   };
 
   const handleSelect = (quote: any) => {
-    setSelectedClass(quote.vehicle_class);
+    setSelectedTypeId(quote.vehicle_type_id);
 
     const params = new URLSearchParams(searchParams.toString());
-    params.set('vehicle_class', quote.vehicle_class);
+    params.set('vehicle_type_id', quote.vehicle_type_id);
+    params.set('vehicle_type_name', quote.type_name ?? '');
     params.set('fare', quote.fare.toString());
     params.set('surcharge_amount', quote.surcharge_amount.toString());
     params.set('surcharge_percentage', quote.surcharge_percentage.toString());
@@ -102,18 +96,16 @@ export default function QuotePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-xl mx-auto space-y-4">
-        {/* Header */}
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft size={16} />
           </Button>
           <div>
             <h1 className="text-xl font-bold">Select Vehicle</h1>
-            <p className="text-sm text-gray-500">Choose your preferred vehicle class</p>
+            <p className="text-sm text-gray-500">Choose your preferred vehicle type</p>
           </div>
         </div>
 
-        {/* Trip Summary */}
         <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-start gap-2">
@@ -151,7 +143,6 @@ export default function QuotePage() {
           </CardContent>
         </Card>
 
-        {/* Quote Cards */}
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -192,9 +183,9 @@ export default function QuotePage() {
           <div className="space-y-3">
             {quotes.map((quote: any) => (
               <Card
-                key={quote.vehicle_class}
+                key={quote.vehicle_type_id}
                 className={`cursor-pointer transition-all ${
-                  selectedClass === quote.vehicle_class
+                  selectedTypeId === quote.vehicle_type_id
                     ? 'ring-2 ring-gray-900'
                     : 'hover:shadow-md'
                 }`}
@@ -202,15 +193,14 @@ export default function QuotePage() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">
-                        {CLASS_ICONS[quote.vehicle_class] ?? '🚗'}
-                      </span>
+                      <span className="text-2xl">🚗</span>
                       <div>
-                        <p className="font-bold">{quote.vehicle_class}</p>
+                        <p className="font-bold">{quote.type_name}</p>
                         <p className="text-xs text-gray-400">
                           {service_type === 'POINT_TO_POINT'
                             ? `${quote.distance_km} km`
                             : `${duration_hours}hr charter`}
+                          {quote.max_luggage > 0 && ` · 🧳 ${quote.max_luggage}`}
                         </p>
                       </div>
                     </div>
@@ -226,7 +216,6 @@ export default function QuotePage() {
                     </div>
                   </div>
 
-                  {/* 价格明细 */}
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 mb-3">
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>
@@ -278,7 +267,6 @@ export default function QuotePage() {
           </div>
         )}
 
-        {/* Return Trip提示 */}
         {trip_type === 'RETURN' && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-3">

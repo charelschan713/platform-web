@@ -160,7 +160,7 @@ export default function PassengerBookingsPage() {
 
                     <div className="flex items-center justify-between pt-1 border-t">
                       <span className="text-xs text-gray-400">
-                        🚗 {b.vehicle_class}
+                        🚗 {b.vehicle_type_name ?? "-"}
                         {b.flight_number && ` · ✈️ ${b.flight_number}`}
                       </span>
                       <span className="font-bold text-sm">

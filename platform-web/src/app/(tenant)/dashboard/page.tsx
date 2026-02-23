@@ -155,7 +155,7 @@ export default function DashboardPage() {
             <p className="text-sm font-bold">
               {booking.currency} ${booking.total_price?.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-400">{booking.vehicle_class}</p>
+            <p className="text-xs text-gray-400">{booking.vehicle_type_name ?? booking.vehicle_type_id ?? '-'}</p>
           </div>
         </div>
       </button>

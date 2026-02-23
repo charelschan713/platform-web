@@ -391,25 +391,25 @@ export default function ReportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">By Vehicle Class</CardTitle>
+                <CardTitle className="text-base">By Vehicle Type</CardTitle>
               </CardHeader>
               <CardContent>
-                {(revenueData?.by_vehicle_class ?? []).length === 0 ? (
+                {(revenueData?.by_vehicle_type ?? []).length === 0 ? (
                   <p className="text-sm text-gray-400 text-center py-8">No data</p>
                 ) : (
                   <>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
-                          data={revenueData?.by_vehicle_class ?? []}
+                          data={revenueData?.by_vehicle_type ?? []}
                           dataKey="bookings"
-                          nameKey="vehicle_class"
+                          nameKey="vehicle_type_id"
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
-                          label={({ vehicle_class }: any) => vehicle_class}
+                          label={({ vehicle_type_id }: any) => vehicle_type_id}
                         >
-                          {(revenueData?.by_vehicle_class ?? []).map((_: any, i: number) => (
+                          {(revenueData?.by_vehicle_type ?? []).map((_: any, i: number) => (
                             <Cell key={i} fill={COLORS[i % COLORS.length]} />
                           ))}
                         </Pie>
@@ -417,14 +417,14 @@ export default function ReportsPage() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="space-y-2 mt-2">
-                      {(revenueData?.by_vehicle_class ?? []).map((vc: any, i: number) => (
-                        <div key={vc.vehicle_class} className="flex justify-between text-sm">
+                      {(revenueData?.by_vehicle_type ?? []).map((vc: any, i: number) => (
+                        <div key={vc.vehicle_type_id} className="flex justify-between text-sm">
                           <div className="flex items-center gap-2">
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: COLORS[i % COLORS.length] }}
                             />
-                            <span>{vc.vehicle_class}</span>
+                            <span>{vc.vehicle_type_id}</span>
                           </div>
                           <div className="text-right">
                             <span className="font-medium">{vc.bookings} jobs</span>

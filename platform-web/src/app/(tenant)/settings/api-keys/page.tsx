@@ -229,7 +229,7 @@ x-api-key: ck_live_your_key_here
 {
   "service_city_id": "xxx",
   "service_type": "POINT_TO_POINT",
-  "vehicle_class": "BUSINESS",
+  "vehicle_type_id": "uuid-of-your-vehicle-type",
   "pickup_address": "SYD T3",
   "dropoff_address": "CBD Hotel",
   "pickup_datetime": "2026-03-01T10:00:00",

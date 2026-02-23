@@ -63,7 +63,7 @@ export default function VehiclesPage() {
                       👤 {v.driver_name}
                     </p>
                     <p className="text-xs text-gray-400">
-                      🚗 {v.platform_class} · {v.capacity} seats
+                      🚗 {v.platform_vehicle?.make} {v.platform_vehicle?.model}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">

@@ -103,7 +103,7 @@ function PaymentForm({
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Vehicle</span>
-          <span className="font-medium">{booking.vehicle_class}</span>
+          <span className="font-medium">{booking.vehicle_type_id}</span>
         </div>
         <div className="border-t pt-2 flex justify-between font-bold">
           <span>Total</span>

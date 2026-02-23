@@ -260,7 +260,7 @@ export default function BookingsPage() {
 
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span>👤 {booking.passenger_name ?? booking.booker_name ?? 'No name'}</span>
-                      <span>🚗 {booking.vehicle_class}</span>
+                      <span>🚗 {booking.vehicle_type_name ?? "-"}</span>
                       {booking.flight_number && <span>✈️ {booking.flight_number}</span>}
                     </div>
 

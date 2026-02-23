@@ -31,7 +31,8 @@ export interface Vehicle {
   year: number;
   color: string;
   plate_number: string;
-  vehicle_class: 'BUSINESS' | 'FIRST' | 'VAN' | 'ELECTRIC';
+  vehicle_type_id?: string;
+  vehicle_type_name?: string;
   capacity: number;
   is_active: boolean;
 }
@@ -63,7 +64,8 @@ export interface Booking {
   pickup_address: string;
   dropoff_address: string;
   pickup_datetime: string;
-  vehicle_class: string;
+  vehicle_type_id?: string;
+  vehicle_type_name?: string;
   status:
     | 'PENDING'
     | 'CONFIRMED'
@@ -80,7 +82,8 @@ export interface Booking {
 
 export interface PricingRule {
   id: string;
-  vehicle_class: string;
+  vehicle_type_id?: string;
+  vehicle_type_name?: string;
   base_fare: number;
   price_per_km: number;
   price_per_minute: number;

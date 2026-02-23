@@ -92,7 +92,7 @@ export default function ConfirmPage() {
   const service_city_id = searchParams.get('service_city_id') ?? '';
   const service_type = searchParams.get('service_type') ?? 'POINT_TO_POINT';
   const trip_type = searchParams.get('trip_type') ?? 'ONE_WAY';
-  const vehicle_class = searchParams.get('vehicle_class') ?? '';
+  const vehicle_type_id = searchParams.get('vehicle_type_id') ?? '';
   const pickup_datetime = searchParams.get('pickup_datetime') ?? '';
   const return_datetime = searchParams.get('return_datetime') ?? '';
   const pickup_address = searchParams.get('pickup_address') ?? '';
@@ -140,7 +140,7 @@ export default function ConfirmPage() {
         service_city_id,
         service_type,
         trip_type,
-        vehicle_class,
+        vehicle_type_id,
         pickup_address,
         pickup_lat: parseFloat(pickup_lat),
         pickup_lng: parseFloat(pickup_lng),
@@ -205,7 +205,7 @@ export default function ConfirmPage() {
               <p>📅 {formatLocalTime(pickup_datetime)}</p>
               <p>📍 {pickup_address}</p>
               {dropoff_address && <p>📍 {dropoff_address}</p>}
-              <p>🚗 {vehicle_class}</p>
+              <p>🚗 {vehicle_type_id}</p>
               <p>💳 {currency} ${total_price.toFixed(2)} pre-authorized</p>
             </div>
             <Button className="w-full" onClick={() => router.push('/bookings')}>
@@ -277,7 +277,7 @@ export default function ConfirmPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span>🚗 {vehicle_class}</span>
+                  <span>🚗 {vehicle_type_id}</span>
                   <span>👥 {passenger_count} pax</span>
                   {flight_number && <span>✈️ {flight_number}</span>}
                 </div>
