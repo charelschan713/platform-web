@@ -35,6 +35,11 @@ type VehicleType = {
   base_fare: number;
   per_km_rate: number;
   per_minute_rate?: number;
+  waypoint_fee?: number;
+  baby_seat_infant_fee?: number;
+  baby_seat_convertible_fee?: number;
+  baby_seat_booster_fee?: number;
+  max_baby_seats?: number | null;
   included_km_per_hour?: number;
   extra_km_rate?: number;
   hourly_rate: number;
@@ -55,6 +60,11 @@ const EMPTY_FORM = {
   base_fare: 0,
   per_km_rate: 0,
   per_minute_rate: 0,
+  waypoint_fee: 0,
+  baby_seat_infant_fee: 0,
+  baby_seat_convertible_fee: 0,
+  baby_seat_booster_fee: 0,
+  max_baby_seats: '',
   included_km_per_hour: 0,
   extra_km_rate: 0,
   hourly_rate: 0,
@@ -104,8 +114,16 @@ export default function VehicleTypesPage() {
     enabled: !!selectedTypeId,
   });
 
+  const toPayload = () => ({
+    ...form,
+    max_baby_seats:
+      form.max_baby_seats === '' || form.max_baby_seats === null
+        ? null
+        : parseInt(String(form.max_baby_seats), 10) || 0,
+  });
+
   const createMutation = useMutation({
-    mutationFn: () => api.post('/vehicle-types', form),
+    mutationFn: () => api.post('/vehicle-types', toPayload()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
       setShowForm(false);
@@ -114,7 +132,7 @@ export default function VehicleTypesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: () => api.patch(`/vehicle-types/${editingId}`, form),
+    mutationFn: () => api.patch(`/vehicle-types/${editingId}`, toPayload()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
       setShowForm(false);
@@ -161,6 +179,14 @@ export default function VehicleTypesPage() {
       base_fare: vt.base_fare,
       per_km_rate: vt.per_km_rate,
       per_minute_rate: vt.per_minute_rate ?? 0,
+      waypoint_fee: vt.waypoint_fee ?? 0,
+      baby_seat_infant_fee: vt.baby_seat_infant_fee ?? 0,
+      baby_seat_convertible_fee: vt.baby_seat_convertible_fee ?? 0,
+      baby_seat_booster_fee: vt.baby_seat_booster_fee ?? 0,
+      max_baby_seats:
+        vt.max_baby_seats === null || vt.max_baby_seats === undefined
+          ? ''
+          : String(vt.max_baby_seats),
       included_km_per_hour: vt.included_km_per_hour ?? 0,
       extra_km_rate: vt.extra_km_rate ?? 0,
       hourly_rate: vt.hourly_rate,
@@ -296,6 +322,96 @@ export default function VehicleTypesPage() {
                 <div className="space-y-1">
                   <Label>Minimum Fare</Label>
                   <Input type="number" min={0} step={0.01} value={form.minimum_fare} onChange={(e) => setForm((p) => ({ ...p, minimum_fare: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 border-t pt-4">
+              <p className="text-sm font-bold text-gray-700">Additional Fees</p>
+              <div className="space-y-1">
+                <Label>Waypoint Fee ($)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={form.waypoint_fee}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      waypoint_fee: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                  placeholder="0.00"
+                />
+                <p className="text-xs text-gray-400">Fee per intermediate stop</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Baby Seat Fees</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Infant (0-12m)</p>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={form.baby_seat_infant_fee}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          baby_seat_infant_fee: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Convertible (1-4y)</p>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={form.baby_seat_convertible_fee}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          baby_seat_convertible_fee: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Booster (4-8y)</p>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={form.baby_seat_booster_fee}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          baby_seat_booster_fee: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">
+                    Max Baby Seats (leave empty = max_passengers - 1)
+                  </p>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.max_baby_seats}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, max_baby_seats: e.target.value }))
+                    }
+                    placeholder="Auto"
+                    className="max-w-24"
+                  />
                 </div>
               </div>
             </div>
