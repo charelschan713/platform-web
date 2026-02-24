@@ -10,10 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Power } from 'lucide-react';
 
 const PLATFORM_TYPES = [
-  { id: 'POINT_TO_POINT', name: 'Point to Point', base: 'Per KM' },
+  { id: 'POINT_TO_POINT', name: 'Point to Point', base: 'Per KM + Per Minute' },
   { id: 'HOURLY_CHARTER', name: 'Hourly Charter', base: 'Per Hour' },
-  { id: 'AIRPORT_PICKUP', name: 'Airport Pickup', base: 'Per KM' },
-  { id: 'AIRPORT_DROPOFF', name: 'Airport Dropoff', base: 'Per KM' },
+  { id: 'AIRPORT_PICKUP', name: 'Airport Pickup', base: 'Per KM + Per Minute + Parking' },
+  { id: 'AIRPORT_DROPOFF', name: 'Airport Dropoff', base: 'Per KM + Per Minute' },
 ];
 
 const EMPTY_FORM = {

@@ -76,10 +76,14 @@ export default function QuotePage() {
   const distance_km =
     parseFloat(searchParams.get('distance_km') ?? '0');
   const duration_hours =
-    parseFloat(searchParams.get('duration_hours') ?? '0');
+    parseFloat(searchParams.get('duration_hours') ?? searchParams.get('hours_booked') ?? '0');
   const duration_minutes = Math.round(duration_hours * 60);
   const tenant_slug =
     searchParams.get('tenant_slug') ?? '';
+  const waypoint_count = parseInt(searchParams.get('waypoint_count') ?? '0', 10) || 0;
+  const waiting_minutes = parseInt(searchParams.get('waiting_minutes') ?? '0', 10) || 0;
+  const pickup_place_id = searchParams.get('pickup_place_id') ?? '';
+  const hours_booked = parseFloat(searchParams.get('hours_booked') ?? '0') || 0;
 
   // 获取 vehicle types
   const { data: vehicleTypes = [], isLoading } =
@@ -236,6 +240,10 @@ export default function QuotePage() {
     params.set('currency', selected.currency);
     params.set('distance_km', distance_km.toString());
     params.set('duration_hours', duration_hours.toString());
+    params.set('hours_booked', (hours_booked || duration_hours).toString());
+    params.set('waypoint_count', waypoint_count.toString());
+    params.set('waiting_minutes', waiting_minutes.toString());
+    if (pickup_place_id) params.set('pickup_place_id', pickup_place_id);
 
     router.push(`/book/confirm?${params.toString()}`);
   };

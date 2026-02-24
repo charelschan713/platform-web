@@ -36,6 +36,7 @@ export default function BookPage() {
   const [return_datetime, setReturnDatetime] = useState('');
   const [duration_hours, setDurationHours] = useState(2);
   const [pickup_address, setPickupAddress] = useState('');
+  const [pickup_place_id] = useState('');
   const [pickup_lat] = useState('');
   const [pickup_lng] = useState('');
   const [dropoff_address, setDropoffAddress] = useState('');
@@ -96,6 +97,9 @@ export default function BookPage() {
       dropoff_lat: dropoff_lat || '0',
       dropoff_lng: dropoff_lng || '0',
       waypoints: JSON.stringify(waypoints),
+      waypoint_count: waypoints.length.toString(),
+      waiting_minutes: '0',
+      pickup_place_id,
       passenger_name,
       passenger_phone,
       passenger_count: passenger_count.toString(),
@@ -111,6 +115,7 @@ export default function BookPage() {
 
     if (service_type === 'HOURLY_CHARTER') {
       params.set('duration_hours', duration_hours.toString());
+      params.set('hours_booked', duration_hours.toString());
     }
     if (trip_type === 'RETURN') {
       params.set('return_datetime', return_datetime);
