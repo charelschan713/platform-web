@@ -16,6 +16,7 @@ import {
   FileText,
   Network,
   BarChart2,
+  Percent,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -37,6 +38,7 @@ const navItems = [
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/connections', label: 'Connections', icon: Network },
   { href: '/reports', label: 'Reports', icon: BarChart2 },
+  { href: '/surcharges', label: 'Surcharges', icon: Percent },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
