@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import platformApi from '@/lib/platformApi';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,24 @@ export default function VehiclesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [search, setSearch] = useState('');
+  const [platformSearch, setPlatformSearch] = useState('');
+  const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
+
+  const { data: platformVehicles = [] } = useQuery({
+    queryKey: ['platform-vehicles'],
+    queryFn: async () => {
+      const res = await platformApi.get('/platform-vehicles');
+      return res.data;
+    },
+  });
+
+  const filteredPlatform = platformVehicles.filter(
+    (v: any) =>
+      !platformSearch ||
+      `${v.make} ${v.model}`
+        .toLowerCase()
+        .includes(platformSearch.toLowerCase()),
+  ).slice(0, 10);
 
   const { data: vehicles = [], isLoading } = useQuery({
     queryKey: ['tenant-vehicles'],
@@ -112,6 +131,7 @@ export default function VehiclesPage() {
           onClick={() => {
             setForm(emptyForm);
             setEditingId(null);
+            setPlatformSearch('');
             setShowForm(true);
           }}
         >
@@ -162,6 +182,61 @@ export default function VehiclesPage() {
                     }))
                   }
                 />
+              </div>
+
+              {/* Select from platform library (optional) */}
+              <div className="space-y-1 col-span-2">
+                <Label>
+                  Select from Platform Library
+                  <span className="text-xs text-gray-400 ml-2">
+                    (optional - auto-fills Make &amp; Model)
+                  </span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    placeholder="Search platform vehicles..."
+                    value={platformSearch}
+                    onChange={(e) => {
+                      setPlatformSearch(e.target.value);
+                      setShowPlatformDropdown(true);
+                    }}
+                    onFocus={() => setShowPlatformDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowPlatformDropdown(false), 200)}
+                  />
+                  {showPlatformDropdown && filteredPlatform.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredPlatform.map((pv: any) => (
+                        <button
+                          key={pv.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
+                          onClick={() => {
+                            setForm((p) => ({
+                              ...p,
+                              make: pv.make,
+                              model: pv.model,
+                            }));
+                            setPlatformSearch(`${pv.make} ${pv.model}`);
+                            setShowPlatformDropdown(false);
+                          }}
+                        >
+                          {pv.images?.[0] ? (
+                            <img
+                              src={pv.images[0]}
+                              className="w-8 h-6 object-cover rounded"
+                              alt=""
+                            />
+                          ) : (
+                            <span>🚗</span>
+                          )}
+                          <span className="font-medium">
+                            {pv.make} {pv.model}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1">
