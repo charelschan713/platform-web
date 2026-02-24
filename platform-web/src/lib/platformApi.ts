@@ -6,9 +6,11 @@ const platformApi = axios.create({
     process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'x-platform-api-key': process.env.NEXT_PUBLIC_PLATFORM_API_KEY ?? '',
   },
 });
 
+// JWT interceptor retained for other endpoints that may need it
 platformApi.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
