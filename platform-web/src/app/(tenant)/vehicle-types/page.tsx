@@ -259,55 +259,95 @@ export default function VehicleTypesPage() {
                   Select which platform vehicles can fulfil this type
                 </span>
               </Label>
+
+              {form.required_platform_vehicle_ids.length > 0 && (
+                <div className="flex flex-wrap gap-2 pb-2 border-b">
+                  {form.required_platform_vehicle_ids.map((id: string) => {
+                    const pv = platformVehicles.find((v: any) => v.id === id);
+                    if (!pv) return null;
+                    return (
+                      <span
+                        key={id}
+                        className="flex items-center gap-1 bg-gray-900 text-white text-xs px-2 py-1 rounded-full"
+                      >
+                        🚗 {pv.make} {pv.model}
+                        <button
+                          type="button"
+                          onClick={() => togglePlatformVehicle(id)}
+                          className="ml-1 hover:text-gray-300"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
               <Input
-                placeholder="Search platform vehicles..."
+                placeholder="Search vehicle models..."
                 value={vehicleSearch}
                 onChange={(e) => setVehicleSearch(e.target.value)}
               />
-              <div className="max-h-56 overflow-y-auto space-y-2">
+
+              <div className="max-h-64 overflow-y-auto space-y-3 border rounded-lg p-3">
                 {(() => {
-                  const filtered = platformVehicles.filter(
-                    (pv: any) =>
-                      !vehicleSearch ||
-                      `${pv.make} ${pv.model}`
-                        .toLowerCase()
-                        .includes(vehicleSearch.toLowerCase()),
-                  );
-                  const grouped = filtered.reduce((acc: any, pv: any) => {
-                    const make = pv.make || 'Other';
-                    if (!acc[make]) acc[make] = [];
-                    acc[make].push(pv);
+                  const groupedByMake = platformVehicles.reduce((acc: any, pv: any) => {
+                    if (!acc[pv.make]) acc[pv.make] = [];
+                    acc[pv.make].push(pv);
                     return acc;
                   }, {});
-                  return Object.entries(grouped).map(([make, vehicles]: [string, any]) => (
-                    <div key={make}>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{make}</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {vehicles.map((pv: any) => {
-                          const isSelected = form.required_platform_vehicle_ids.includes(pv.id);
-                          return (
-                            <button
-                              key={pv.id}
-                              type="button"
-                              onClick={() => togglePlatformVehicle(pv.id)}
-                              className={`px-2.5 py-1.5 rounded-lg border text-xs transition-all ${
-                                isSelected
-                                  ? 'border-gray-900 bg-gray-900 text-white'
-                                  : 'border-gray-200 hover:border-gray-400'
-                              }`}
-                            >
-                              {pv.model}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ));
+                  const makes = Object.keys(groupedByMake).sort();
+                  return makes
+                    .filter(
+                      (make) =>
+                        !vehicleSearch ||
+                        make.toLowerCase().includes(vehicleSearch.toLowerCase()) ||
+                        groupedByMake[make].some((pv: any) =>
+                          pv.model.toLowerCase().includes(vehicleSearch.toLowerCase()),
+                        ),
+                    )
+                    .map((make) => {
+                      const vehicles = groupedByMake[make].filter(
+                        (pv: any) =>
+                          !vehicleSearch ||
+                          make.toLowerCase().includes(vehicleSearch.toLowerCase()) ||
+                          pv.model.toLowerCase().includes(vehicleSearch.toLowerCase()),
+                      );
+                      return (
+                        <div key={make} className="space-y-1">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                            {make}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {vehicles.map((pv: any) => {
+                              const isSelected =
+                                form.required_platform_vehicle_ids.includes(pv.id);
+                              return (
+                                <button
+                                  key={pv.id}
+                                  type="button"
+                                  onClick={() => togglePlatformVehicle(pv.id)}
+                                  className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                                    isSelected
+                                      ? 'bg-gray-900 text-white border-gray-900'
+                                      : 'border-gray-200 hover:border-gray-400 text-gray-700'
+                                  }`}
+                                >
+                                  {pv.model}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    });
                 })()}
               </div>
+
               {form.required_platform_vehicle_ids.length > 0 && (
-                <p className="text-xs text-gray-500">
-                  {form.required_platform_vehicle_ids.length} vehicle model(s) selected
+                <p className="text-xs text-gray-400">
+                  {form.required_platform_vehicle_ids.length} model(s) selected
                 </p>
               )}
             </div>
