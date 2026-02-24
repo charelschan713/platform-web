@@ -99,11 +99,11 @@ export default function ServiceTypesPage() {
         <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Platform Standard</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {PLATFORM_TYPES.map((pt) => (
-            <Card key={pt.id} className="bg-muted border-dashed">
+            <Card key={pt.id} className="bg-card border border-white/10">
               <CardContent className="p-3">
                 <p className="font-semibold text-sm">{pt.name}</p>
                 <p className="text-xs text-gray-400 mt-1">{pt.base}</p>
-                <span className="text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full mt-2 inline-block">
+                <span className="text-xs bg-white/10 text-white border border-white/20 px-1.5 py-0.5 rounded-full mt-2 inline-block">
                   Platform
                 </span>
               </CardContent>
@@ -143,7 +143,7 @@ export default function ServiceTypesPage() {
                   value={form.base_type}
                   onChange={(e) => setForm((p) => ({ ...p, base_type: e.target.value }))}
                 >
-                  <option value="POINT_TO_POINT">Point to Point (Per KM)</option>
+                  <option value="POINT_TO_POINT">Point to Point (Per KM + Per Minute)</option>
                   <option value="HOURLY_CHARTER">Hourly Charter (Per Hour)</option>
                 </select>
               </div>
@@ -251,10 +251,10 @@ export default function ServiceTypesPage() {
                   </div>
 
                   <div className="flex gap-2 text-xs">
-                    <span className="bg-muted px-2 py-0.5 rounded-full">
+                    <span className="bg-white/10 px-2 py-0.5 rounded-full">
                       Based on {st.base_type === 'POINT_TO_POINT' ? 'P2P' : 'Hourly'}
                     </span>
-                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                    <span className="bg-white/10 text-foreground px-2 py-0.5 rounded-full">
                       +
                       {st.surcharge_type === 'FIXED'
                         ? `$${st.surcharge_value}`
