@@ -13,7 +13,7 @@ const STATUS_TABS = [
   { key: 'ALL', label: 'All' },
   { key: 'WAITING', label: 'Waiting for Actions' },
   { key: 'CONFIRMED', label: 'Confirmed' },
-  { key: 'ASSIGNED', label: 'Assigned' },
+  { key: 'DRIVER_ASSIGNED', label: 'Driver Assigned' },
   { key: 'IN_PROGRESS', label: 'In Progress' },
   { key: 'JOB_DONE', label: 'Job Done' },
   { key: 'FULFILLED', label: 'Fulfilled' },
@@ -80,6 +80,25 @@ export default function BookingsPage() {
 
     return result;
   }, [bookings, search, statusTab, subFilter]);
+
+
+  const doAssign = async (bookingId: string) => {
+    const driver_id = prompt('Driver ID');
+    if (!driver_id) return;
+    const vehicle_id = prompt('Vehicle ID (optional)') || undefined;
+    await api.patch(`/bookings/${bookingId}/assign`, { driver_id, vehicle_id });
+    window.location.reload();
+  };
+
+  const doJobDone = async (bookingId: string) => {
+    await api.patch(`/bookings/${bookingId}/job-done`);
+    window.location.reload();
+  };
+
+  const doFulfil = async (bookingId: string) => {
+    await api.patch(`/bookings/${bookingId}/fulfil`, {});
+    window.location.reload();
+  };
 
   const countForTab = (key: string) => {
     if (key === 'ALL') return bookings.length;
@@ -190,6 +209,18 @@ export default function BookingsPage() {
                       {tag}
                     </span>
                   ))}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  {booking.booking_status === 'CONFIRMED' && (
+                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); doAssign(booking.id); }}>Assign Driver</Button>
+                  )}
+                  {booking.booking_status === 'DRIVER_ASSIGNED' && (
+                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); doJobDone(booking.id); }}>Job Done</Button>
+                  )}
+                  {booking.booking_status === 'JOB_DONE' && (
+                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); doFulfil(booking.id); }}>Fulfil</Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -107,20 +107,20 @@ export default function DriversPage() {
 
   const inviteEmail = async (driver: any) => {
     if (!driver.email) return alert('Driver has no email');
-    await api.post('/driver-invitations/email', { email: driver.email });
+    await api.post('/drivers/invite/email', { email: driver.email });
     alert('Invite email sent');
     await fetchDrivers();
   };
 
   const inviteSMS = async (driver: any) => {
     if (!driver.phone) return alert('Driver has no phone');
-    await api.post('/driver-invitations/sms', { phone: driver.phone });
+    await api.post('/drivers/invite/sms', { phone: driver.phone });
     alert('Invite SMS sent');
     await fetchDrivers();
   };
 
   const testSMS = async (driver: any) => {
-    await api.post('/driver-invitations/test-sms', { driver_id: driver.id });
+    await api.post(`/drivers/${driver.id}/test-sms`);
     alert('Test SMS sent');
   };
 
