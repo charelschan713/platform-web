@@ -227,21 +227,15 @@ export default function QuotePage() {
 
     const final_estimated_fare = selected_option?.fare ?? selected.estimated_fare;
 
-    const params = new URLSearchParams({
-      service_city_id,
-      service_type,
-      pickup_address,
-      dropoff_address,
-      pickup_datetime,
-      vehicle_type_id: selected.vehicle_type_id,
-      type_name: selected.type_name,
-      estimated_fare: final_estimated_fare.toString(),
-      billing_method,
-      currency: selected.currency,
-      distance_km: distance_km.toString(),
-      duration_hours: duration_hours.toString(),
-      tenant_slug,
-    });
+    // Forward all original params + add quote selection
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('vehicle_type_id', selected.vehicle_type_id);
+    params.set('type_name', selected.type_name);
+    params.set('estimated_fare', final_estimated_fare.toString());
+    params.set('billing_method', billing_method);
+    params.set('currency', selected.currency);
+    params.set('distance_km', distance_km.toString());
+    params.set('duration_hours', duration_hours.toString());
 
     router.push(`/book/confirm?${params.toString()}`);
   };

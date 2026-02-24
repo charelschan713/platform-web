@@ -93,6 +93,7 @@ export default function ConfirmPage() {
   const service_type = searchParams.get('service_type') ?? 'POINT_TO_POINT';
   const trip_type = searchParams.get('trip_type') ?? 'ONE_WAY';
   const vehicle_type_id = searchParams.get('vehicle_type_id') ?? '';
+  const type_name = searchParams.get('type_name') ?? vehicle_type_id;
   const pickup_datetime = searchParams.get('pickup_datetime') ?? '';
   const return_datetime = searchParams.get('return_datetime') ?? '';
   const pickup_address = searchParams.get('pickup_address') ?? '';
@@ -115,12 +116,13 @@ export default function ConfirmPage() {
   const timezone = searchParams.get('timezone') ?? 'Australia/Sydney';
   const currency = searchParams.get('currency') ?? 'AUD';
   const billing_method = searchParams.get('billing_method') ?? 'KM';
-  const fare = parseFloat(searchParams.get('fare') ?? '0');
+  const estimated_fare = parseFloat(searchParams.get('estimated_fare') ?? '0');
+  const fare = parseFloat(searchParams.get('fare') ?? '0') || estimated_fare;
   const surcharge_amount = parseFloat(searchParams.get('surcharge_amount') ?? '0');
   const surcharge_percentage = parseFloat(searchParams.get('surcharge_percentage') ?? '0');
   const discount_type = searchParams.get('discount_type') ?? '';
   const discount_amount = parseFloat(searchParams.get('discount_amount') ?? '0');
-  const total_price = parseFloat(searchParams.get('total_price') ?? '0');
+  const total_price = parseFloat(searchParams.get('total_price') ?? '0') || estimated_fare;
 
   const formatLocalTime = (datetimeStr: string) => {
     if (!datetimeStr) return '';
@@ -211,7 +213,7 @@ export default function ConfirmPage() {
               <p>📅 {formatLocalTime(pickup_datetime)}</p>
               <p>📍 {pickup_address}</p>
               {dropoff_address && <p>📍 {dropoff_address}</p>}
-              <p>🚗 {vehicle_type_id}</p>
+              <p>🚗 {type_name}</p>
               <p>💳 {currency} ${total_price.toFixed(2)} pre-authorized</p>
             </div>
             <Button className="w-full" onClick={() => router.push('/bookings')}>
@@ -283,7 +285,7 @@ export default function ConfirmPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span>🚗 {vehicle_type_id}</span>
+                  <span>🚗 {type_name}</span>
                   <span>👥 {passenger_count} pax</span>
                   {flight_number && <span>✈️ {flight_number}</span>}
                 </div>
