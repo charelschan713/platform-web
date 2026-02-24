@@ -35,13 +35,23 @@ type VehicleType = {
   base_fare: number;
   per_km_rate: number;
   per_minute_rate?: number;
+  pricing_model?: 'STRAIGHT' | 'INCLUDED';
+  included_km?: number;
+  included_minutes?: number;
+  extra_km_rate?: number;
+  extra_minute_rate?: number;
+  waiting_rate?: number;
+  hourly_included_km?: number;
+  min_booking_hours?: number;
+  free_waiting_standard?: number;
+  free_waiting_domestic?: number;
+  free_waiting_international?: number;
   waypoint_fee?: number;
+  waypoint_fee_type?: 'FIXED' | 'PERCENTAGE';
   baby_seat_infant_fee?: number;
   baby_seat_convertible_fee?: number;
   baby_seat_booster_fee?: number;
   max_baby_seats?: number | null;
-  included_km_per_hour?: number;
-  extra_km_rate?: number;
   hourly_rate: number;
   minimum_fare: number;
   currency: string;
@@ -60,14 +70,24 @@ const EMPTY_FORM = {
   base_fare: 0,
   per_km_rate: 0,
   per_minute_rate: 0,
+  pricing_model: 'STRAIGHT' as 'STRAIGHT' | 'INCLUDED',
+  included_km: 10,
+  included_minutes: 30,
+  extra_km_rate: 0,
+  extra_minute_rate: 0,
+  waiting_rate: 0,
+  hourly_rate: 0,
+  hourly_included_km: 20,
+  min_booking_hours: 1,
+  free_waiting_standard: 15,
+  free_waiting_domestic: 30,
+  free_waiting_international: 60,
   waypoint_fee: 0,
+  waypoint_fee_type: 'FIXED' as 'FIXED' | 'PERCENTAGE',
   baby_seat_infant_fee: 0,
   baby_seat_convertible_fee: 0,
   baby_seat_booster_fee: 0,
   max_baby_seats: '',
-  included_km_per_hour: 0,
-  extra_km_rate: 0,
-  hourly_rate: 0,
   minimum_fare: 0,
   currency: 'AUD',
   required_platform_vehicle_ids: [] as string[],
@@ -179,7 +199,20 @@ export default function VehicleTypesPage() {
       base_fare: vt.base_fare,
       per_km_rate: vt.per_km_rate,
       per_minute_rate: vt.per_minute_rate ?? 0,
+      pricing_model: vt.pricing_model ?? 'STRAIGHT',
+      included_km: vt.included_km ?? 10,
+      included_minutes: vt.included_minutes ?? 30,
+      extra_km_rate: vt.extra_km_rate ?? 0,
+      extra_minute_rate: vt.extra_minute_rate ?? 0,
+      waiting_rate: vt.waiting_rate ?? 0,
+      hourly_rate: vt.hourly_rate ?? 0,
+      hourly_included_km: vt.hourly_included_km ?? 20,
+      min_booking_hours: vt.min_booking_hours ?? 1,
+      free_waiting_standard: vt.free_waiting_standard ?? 15,
+      free_waiting_domestic: vt.free_waiting_domestic ?? 30,
+      free_waiting_international: vt.free_waiting_international ?? 60,
       waypoint_fee: vt.waypoint_fee ?? 0,
+      waypoint_fee_type: vt.waypoint_fee_type ?? 'FIXED',
       baby_seat_infant_fee: vt.baby_seat_infant_fee ?? 0,
       baby_seat_convertible_fee: vt.baby_seat_convertible_fee ?? 0,
       baby_seat_booster_fee: vt.baby_seat_booster_fee ?? 0,
@@ -187,9 +220,6 @@ export default function VehicleTypesPage() {
         vt.max_baby_seats === null || vt.max_baby_seats === undefined
           ? ''
           : String(vt.max_baby_seats),
-      included_km_per_hour: vt.included_km_per_hour ?? 0,
-      extra_km_rate: vt.extra_km_rate ?? 0,
-      hourly_rate: vt.hourly_rate,
       minimum_fare: vt.minimum_fare,
       currency: vt.currency,
       required_platform_vehicle_ids: (vt.requirements ?? []).map(
@@ -308,18 +338,6 @@ export default function VehicleTypesPage() {
                   <Input type="number" min={0} step={0.01} value={form.per_minute_rate ?? 0} onChange={(e) => setForm((p) => ({ ...p, per_minute_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Included KM per Hour</Label>
-                  <Input type="number" min={0} step={1} value={form.included_km_per_hour ?? 0} onChange={(e) => setForm((p) => ({ ...p, included_km_per_hour: parseFloat(e.target.value) || 0 }))} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Extra KM Rate ($)</Label>
-                  <Input type="number" min={0} step={0.1} value={form.extra_km_rate ?? 0} onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Hourly Rate</Label>
-                  <Input type="number" min={0} step={0.01} value={form.hourly_rate} onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))} />
-                </div>
-                <div className="space-y-1">
                   <Label>Minimum Fare</Label>
                   <Input type="number" min={0} step={0.01} value={form.minimum_fare} onChange={(e) => setForm((p) => ({ ...p, minimum_fare: parseFloat(e.target.value) || 0 }))} />
                 </div>
@@ -327,91 +345,91 @@ export default function VehicleTypesPage() {
             </div>
 
             <div className="space-y-4 border-t pt-4">
-              <p className="text-sm font-bold text-gray-700">Additional Fees</p>
-              <div className="space-y-1">
-                <Label>Waypoint Fee ($)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={form.waypoint_fee}
-                  onChange={(e) =>
-                    setForm((p) => ({
-                      ...p,
-                      waypoint_fee: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  placeholder="0.00"
-                />
-                <p className="text-xs text-gray-400">Fee per intermediate stop</p>
+              <p className="text-sm font-bold">Pricing Model</p>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" value="STRAIGHT" checked={form.pricing_model === 'STRAIGHT'} onChange={() => setForm((p) => ({ ...p, pricing_model: 'STRAIGHT' }))} />
+                  <div><p className="text-sm font-medium">Straight</p><p className="text-xs text-gray-400">Per km/min from start</p></div>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" value="INCLUDED" checked={form.pricing_model === 'INCLUDED'} onChange={() => setForm((p) => ({ ...p, pricing_model: 'INCLUDED' }))} />
+                  <div><p className="text-sm font-medium">Included</p><p className="text-xs text-gray-400">Base includes X km + X min</p></div>
+                </label>
               </div>
 
-              <div className="space-y-2">
-                <Label>Baby Seat Fees</Label>
-                <div className="grid grid-cols-3 gap-2">
+              {form.pricing_model === 'INCLUDED' && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Infant (0-12m)</p>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={form.baby_seat_infant_fee}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          baby_seat_infant_fee: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      placeholder="0.00"
-                    />
+                    <Label className="text-xs">Included KM</Label>
+                    <Input type="number" min={0} value={form.included_km} onChange={(e) => setForm((p) => ({ ...p, included_km: parseInt(e.target.value, 10) || 0 }))} />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Convertible (1-4y)</p>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={form.baby_seat_convertible_fee}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          baby_seat_convertible_fee: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Booster (4-8y)</p>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={form.baby_seat_booster_fee}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          baby_seat_booster_fee: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      placeholder="0.00"
-                    />
+                    <Label className="text-xs">Included Minutes</Label>
+                    <Input type="number" min={0} value={form.included_minutes} onChange={(e) => setForm((p) => ({ ...p, included_minutes: parseInt(e.target.value, 10) || 0 }))} />
                   </div>
                 </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500">
-                    Max Baby Seats (leave empty = max_passengers - 1)
-                  </p>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.max_baby_seats}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, max_baby_seats: e.target.value }))
-                    }
-                    placeholder="Auto"
-                    className="max-w-24"
-                  />
+                  <Label className="text-xs">Extra KM Rate ($)</Label>
+                  <Input type="number" min={0} step={0.01} value={form.extra_km_rate} onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Extra Min Rate ($)</Label>
+                  <Input type="number" min={0} step={0.01} value={form.extra_minute_rate} onChange={(e) => setForm((p) => ({ ...p, extra_minute_rate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Waiting Rate ($/min)</Label>
+                  <Input type="number" min={0} step={0.01} value={form.waiting_rate} onChange={(e) => setForm((p) => ({ ...p, waiting_rate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <p className="text-sm font-bold">Hourly Charter</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1"><Label className="text-xs">Hourly Rate ($)</Label><Input type="number" min={0} step={0.01} value={form.hourly_rate} onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">Included KM/Hour</Label><Input type="number" min={0} value={form.hourly_included_km} onChange={(e) => setForm((p) => ({ ...p, hourly_included_km: parseInt(e.target.value, 10) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">Min Booking Hours</Label><Input type="number" min={1} value={form.min_booking_hours} onChange={(e) => setForm((p) => ({ ...p, min_booking_hours: parseInt(e.target.value, 10) || 1 }))} /></div>
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <p className="text-sm font-bold">Free Waiting Time</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1"><Label className="text-xs">Standard (min)</Label><Input type="number" min={0} value={form.free_waiting_standard} onChange={(e) => setForm((p) => ({ ...p, free_waiting_standard: parseInt(e.target.value, 10) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">Domestic Airport (min)</Label><Input type="number" min={0} value={form.free_waiting_domestic} onChange={(e) => setForm((p) => ({ ...p, free_waiting_domestic: parseInt(e.target.value, 10) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">International Airport (min)</Label><Input type="number" min={0} value={form.free_waiting_international} onChange={(e) => setForm((p) => ({ ...p, free_waiting_international: parseInt(e.target.value, 10) || 0 }))} /></div>
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <p className="text-sm font-bold">Baby Seat Fees</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1"><Label className="text-xs">Infant 0-12m ($)</Label><Input type="number" min={0} step={0.01} value={form.baby_seat_infant_fee} onChange={(e) => setForm((p) => ({ ...p, baby_seat_infant_fee: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">Convertible 1-4y ($)</Label><Input type="number" min={0} step={0.01} value={form.baby_seat_convertible_fee} onChange={(e) => setForm((p) => ({ ...p, baby_seat_convertible_fee: parseFloat(e.target.value) || 0 }))} /></div>
+                <div className="space-y-1"><Label className="text-xs">Booster 4-8y ($)</Label><Input type="number" min={0} step={0.01} value={form.baby_seat_booster_fee} onChange={(e) => setForm((p) => ({ ...p, baby_seat_booster_fee: parseFloat(e.target.value) || 0 }))} /></div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Max Baby Seats (empty = max_passengers - 1)</Label>
+                <Input type="number" min={0} value={form.max_baby_seats} onChange={(e) => setForm((p) => ({ ...p, max_baby_seats: e.target.value }))} placeholder="Auto" className="max-w-32" />
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <p className="text-sm font-bold">Waypoint Fee</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Fee per Stop</Label>
+                  <Input type="number" min={0} step={0.01} value={form.waypoint_fee} onChange={(e) => setForm((p) => ({ ...p, waypoint_fee: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Fee Type</Label>
+                  <select value={form.waypoint_fee_type} onChange={(e) => setForm((p) => ({ ...p, waypoint_fee_type: e.target.value as 'FIXED' | 'PERCENTAGE' }))} className="w-full border rounded px-3 py-2 text-sm">
+                    <option value="FIXED">Fixed ($)</option>
+                    <option value="PERCENTAGE">% of Base Fare</option>
+                  </select>
                 </div>
               </div>
             </div>

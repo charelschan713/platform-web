@@ -17,7 +17,7 @@ type VehicleType = {
   base_fare: number;
   per_km_rate: number;
   per_minute_rate?: number;
-  included_km_per_hour?: number;
+  hourly_included_km?: number;
   extra_km_rate?: number;
   hourly_rate: number;
   minimum_fare: number;
@@ -153,11 +153,11 @@ export default function QuotePage() {
         if (service_type === 'HOURLY_CHARTER' && duration_hours > 0) {
           fare = duration_hours * (vt.hourly_rate ?? 0);
           if (
-            (vt.included_km_per_hour ?? 0) > 0 &&
+            (vt.hourly_included_km ?? 0) > 0 &&
             (vt.extra_km_rate ?? 0) > 0 &&
             distance_km > 0
           ) {
-            const included_km = duration_hours * (vt.included_km_per_hour ?? 0);
+            const included_km = duration_hours * (vt.hourly_included_km ?? 0);
             const extra_km = Math.max(0, distance_km - included_km);
             extra_km_charge = extra_km * (vt.extra_km_rate ?? 0);
           }
