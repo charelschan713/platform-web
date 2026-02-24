@@ -41,6 +41,7 @@ type VehicleType = {
   included_minutes?: number;
   extra_km_rate?: number;
   extra_minute_rate?: number;
+  waiting_minutes_free?: number;
   waiting_rate?: number;
   hourly_included_km?: number;
   min_booking_hours?: number;
@@ -76,6 +77,7 @@ const EMPTY_FORM = {
   included_minutes: 30,
   extra_km_rate: 0,
   extra_minute_rate: 0,
+  waiting_minutes_free: 0,
   waiting_rate: 0,
   hourly_rate: 0,
   hourly_included_km: 20,
@@ -206,6 +208,7 @@ export default function VehicleTypesPage() {
       included_minutes: vt.included_minutes ?? 30,
       extra_km_rate: vt.extra_km_rate ?? 0,
       extra_minute_rate: vt.extra_minute_rate ?? 0,
+      waiting_minutes_free: vt.waiting_minutes_free ?? 0,
       waiting_rate: vt.waiting_rate ?? 0,
       hourly_rate: vt.hourly_rate ?? 0,
       hourly_included_km: vt.hourly_included_km ?? 20,
@@ -379,8 +382,12 @@ export default function VehicleTypesPage() {
                   <Input type="number" min={0} step={0.01} value={form.extra_km_rate} onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Extra Min Rate ($)</Label>
+                  <Label className="text-xs">Waiting/Overtime Rate ($)</Label>
                   <Input type="number" min={0} step={0.01} value={form.extra_minute_rate} onChange={(e) => setForm((p) => ({ ...p, extra_minute_rate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Free Waiting Minutes</Label>
+                  <Input type="number" min={0} value={form.waiting_minutes_free} onChange={(e) => setForm((p) => ({ ...p, waiting_minutes_free: parseInt(e.target.value, 10) || 0 }))} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Waiting Rate ($/min)</Label>
