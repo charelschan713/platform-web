@@ -147,16 +147,21 @@ export default function VehicleTypesPage() {
     }));
   };
 
-  const filteredVehicles = tenantVehicles.filter(
+  const eligibleVehicles = tenantVehicles.filter(
     (v: any) =>
-      !vehicleSearch ||
-      `${v.make} ${v.model} ${v.registration_plate}`
-        .toLowerCase()
-        .includes(vehicleSearch.toLowerCase()),
+      v.is_active &&
+      (v.seats ?? 0) >= (form.max_passengers ?? 1) &&
+      (v.luggage_capacity ?? 0) >= (form.max_luggage ?? 0),
+  );
+
+  const ineligibleVehicles = tenantVehicles.filter(
+    (v: any) =>
+      v.is_active &&
+      ((v.seats ?? 0) < (form.max_passengers ?? 1) ||
+        (v.luggage_capacity ?? 0) < (form.max_luggage ?? 0)),
   );
 
   const assignedVehicleIds = new Set(assignedIds);
-
 
   const handleSubmit = () => {
     if (editingId) {
@@ -333,8 +338,11 @@ export default function VehicleTypesPage() {
 
             <div>
               <p className="text-sm font-semibold mb-2">Assign Vehicles</p>
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="text-xs text-gray-400 mb-1">
                 Each vehicle can only belong to one type. Greyed out vehicles are already assigned.
+              </p>
+              <p className="text-xs text-gray-400 mb-3">
+                ⚠️ Set Max Passengers and Max Luggage first to filter eligible vehicles
               </p>
               <Input
                 placeholder="Search vehicles..."
@@ -343,34 +351,76 @@ export default function VehicleTypesPage() {
                 className="mb-3"
               />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {filteredVehicles.map((v: any) => {
-                  const isAssigned = assignedVehicleIds.has(v.id);
-                  const isSelected = form.vehicle_ids?.includes(v.id);
-                  return (
-                    <button
+                {eligibleVehicles.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-2">
+                    No vehicles match the requirements ({form.max_passengers}{' '}
+                    passengers, {form.max_luggage} luggage)
+                  </p>
+                ) : (
+                  eligibleVehicles
+                    .filter(
+                      (v: any) =>
+                        !vehicleSearch ||
+                        `${v.make} ${v.model} ${v.registration_plate}`
+                          .toLowerCase()
+                          .includes(vehicleSearch.toLowerCase()),
+                    )
+                    .map((v: any) => {
+                      const isAssigned =
+                        assignedVehicleIds.has(v.id) &&
+                        !form.vehicle_ids?.includes(v.id);
+                      const isSelected = form.vehicle_ids?.includes(v.id);
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          disabled={isAssigned}
+                          onClick={() => toggleVehicle(v.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
+                            isSelected
+                              ? 'border-gray-900 bg-gray-900 text-white'
+                              : isAssigned
+                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                        >
+                          <span>🚗</span>
+                          <span>
+                            {v.make} {v.model}
+                          </span>
+                          <span className="text-xs opacity-60">
+                            {v.registration_plate}
+                          </span>
+                          <span className="text-xs opacity-60">
+                            👥{v.seats} 🧳{v.luggage_capacity}
+                          </span>
+                        </button>
+                      );
+                    })
+                )}
+              </div>
+              {ineligibleVehicles.length > 0 && (
+                <div className="mt-2 pt-2 border-t">
+                  <p className="text-xs text-gray-400 mb-1">
+                    Not eligible (insufficient seats or luggage):
+                  </p>
+                  {ineligibleVehicles.map((v: any) => (
+                    <div
                       key={v.id}
-                      type="button"
-                      disabled={isAssigned && !isSelected}
-                      onClick={() => toggleVehicle(v.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
-                        isSelected
-                          ? 'border-gray-900 bg-gray-900 text-white'
-                          : isAssigned
-                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                            : 'border-gray-200 hover:border-gray-400'
-                      }`}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-300"
                     >
                       <span>🚗</span>
                       <span>
                         {v.make} {v.model}
                       </span>
-                      <span className="text-xs opacity-60">
-                        {v.registration_plate}
+                      <span>{v.registration_plate}</span>
+                      <span className="text-red-300">
+                        👥{v.seats} 🧳{v.luggage_capacity}
                       </span>
-                    </button>
-                  );
-                })}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {form.vehicle_ids.length > 0 && (
                 <p className="text-xs text-gray-500 mt-2">
                   {form.vehicle_ids.length} vehicle(s) selected
