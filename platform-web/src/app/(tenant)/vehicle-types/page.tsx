@@ -3,18 +3,22 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import platformApi from '@/lib/platformApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Trash2, Car } from 'lucide-react';
 
-type PlatformVehicle = {
+type TenantVehicle = {
   id: string;
+  registration_plate: string;
   make: string;
   model: string;
-  images: string[];
+  year?: number;
+  color?: string;
+  seats?: number;
+  luggage_capacity?: number;
+  is_active?: boolean;
 };
 
 type VehicleType = {
@@ -34,7 +38,7 @@ type VehicleType = {
   is_active: boolean;
   vehicles: {
     id: string;
-    platform_vehicle: PlatformVehicle;
+    platform_vehicle: TenantVehicle;
   }[];
 };
 
@@ -59,7 +63,7 @@ export default function VehicleTypesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [searchVehicle, setSearchVehicle] = useState('');
+  const [vehicleSearch, setVehicleSearch] = useState('');
 
   const { data: vehicleTypes = [], isLoading } = useQuery<VehicleType[]>({
     queryKey: ['vehicle-types'],
@@ -69,10 +73,10 @@ export default function VehicleTypesPage() {
     },
   });
 
-  const { data: platformVehicles = [] } = useQuery<PlatformVehicle[]>({
-    queryKey: ['platform-vehicles'],
+  const { data: tenantVehicles = [] } = useQuery<TenantVehicle[]>({
+    queryKey: ['tenant-vehicles'],
     queryFn: async () => {
-      const res = await platformApi.get('/platform-vehicles');
+      const res = await api.get('/tenant-vehicles');
       return res.data;
     },
   });
@@ -143,14 +147,16 @@ export default function VehicleTypesPage() {
     }));
   };
 
-  const filteredVehicles = platformVehicles.filter((v) =>
-    `${v.make} ${v.model}`.toLowerCase().includes(searchVehicle.toLowerCase()),
+  const filteredVehicles = tenantVehicles.filter(
+    (v: any) =>
+      !vehicleSearch ||
+      `${v.make} ${v.model} ${v.registration_plate}`
+        .toLowerCase()
+        .includes(vehicleSearch.toLowerCase()),
   );
 
-  const isVehicleAvailable = (id: string) => {
-    if (form.vehicle_ids.includes(id)) return true;
-    return !assignedIds.includes(id);
-  };
+  const assignedVehicleIds = new Set(assignedIds);
+
 
   const handleSubmit = () => {
     if (editingId) {
@@ -332,31 +338,34 @@ export default function VehicleTypesPage() {
               </p>
               <Input
                 placeholder="Search vehicles..."
-                value={searchVehicle}
-                onChange={(e) => setSearchVehicle(e.target.value)}
+                value={vehicleSearch}
+                onChange={(e) => setVehicleSearch(e.target.value)}
                 className="mb-3"
               />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {filteredVehicles.map((v) => {
-                  const available = isVehicleAvailable(v.id);
-                  const selected = form.vehicle_ids.includes(v.id);
+                {filteredVehicles.map((v: any) => {
+                  const isAssigned = assignedVehicleIds.has(v.id);
+                  const isSelected = form.vehicle_ids?.includes(v.id);
                   return (
                     <button
                       key={v.id}
                       type="button"
-                      disabled={!available}
-                      onClick={() => available && toggleVehicle(v.id)}
-                      className={`flex items-center gap-2 p-2 rounded-lg border text-left text-sm transition-all ${
-                        selected
-                          ? 'bg-gray-900 text-white border-gray-900'
-                          : available
-                            ? 'border-gray-200 hover:border-gray-400'
-                            : 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                      disabled={isAssigned && !isSelected}
+                      onClick={() => toggleVehicle(v.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
+                        isSelected
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : isAssigned
+                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                            : 'border-gray-200 hover:border-gray-400'
                       }`}
                     >
-                      <Car size={14} className="shrink-0" />
-                      <span className="truncate">
+                      <span>🚗</span>
+                      <span>
                         {v.make} {v.model}
+                      </span>
+                      <span className="text-xs opacity-60">
+                        {v.registration_plate}
                       </span>
                     </button>
                   );
