@@ -352,6 +352,7 @@ export default function BookPage() {
                 <Label>Passenger (Who's riding)</Label>
                 <PassengerSearch
                   selected={selectedPassenger}
+                  contact_id={selectedContact?.id ?? null}
                   onSelect={(p) => {
                     setSelectedPassenger(p);
                     setCrmPassengerId(p?.id ?? '');

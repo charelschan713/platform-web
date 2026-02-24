@@ -53,6 +53,10 @@ export default function CrmPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState(EMPTY_CONTACT);
   const [passengerForm, setPassengerForm] = useState(EMPTY_PASSENGER);
+  const [showLinkPassenger, setShowLinkPassenger] = useState(false);
+  const [linkPassengerId, setLinkPassengerId] = useState('');
+  const [linkRelationship, setLinkRelationship] = useState('');
+  const [linkIsDefault, setLinkIsDefault] = useState(false);
 
   const { data: contacts = [], isLoading: loadingContacts } = useQuery({
     queryKey: ['contacts', search],
@@ -81,6 +85,15 @@ export default function CrmPage() {
       return res.data;
     },
     enabled: !!selectedId && tab === 'Contacts',
+  });
+
+  const { data: contactPassengers = [] } = useQuery({
+    queryKey: ['contact-passengers', selectedContact?.id],
+    queryFn: async () => {
+      const res = await api.get(`/crm/contacts/${selectedContact?.id}/passengers`);
+      return res.data;
+    },
+    enabled: !!selectedContact?.id,
   });
 
   const { data: selectedPassenger } = useQuery({
@@ -143,6 +156,30 @@ export default function CrmPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['passengers'] });
       setSelectedId(null);
+    },
+  });
+
+  const linkPassengerMutation = useMutation({
+    mutationFn: () =>
+      api.post(`/crm/contacts/${selectedContact?.id}/passengers`, {
+        passenger_id: linkPassengerId,
+        is_default: linkIsDefault,
+        relationship: linkRelationship || undefined,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-passengers', selectedContact?.id] });
+      setShowLinkPassenger(false);
+      setLinkPassengerId('');
+      setLinkRelationship('');
+      setLinkIsDefault(false);
+    },
+  });
+
+  const unlinkPassengerMutation = useMutation({
+    mutationFn: ({ contact_id, passenger_id }: { contact_id: string; passenger_id: string }) =>
+      api.delete(`/crm/contacts/${contact_id}/passengers/${passenger_id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-passengers', selectedContact?.id] });
     },
   });
 
@@ -833,6 +870,97 @@ export default function CrmPage() {
                     <p className="text-xs text-gray-400 mb-1">Internal Notes (Staff Only)</p>
                     <p className="text-sm bg-yellow-50 rounded p-2">{selectedContact.internal_notes}</p>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm">Linked Passengers</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowLinkPassenger((v) => !v)}
+                  >
+                    <Plus size={14} className="mr-1" />
+                    Link Passenger
+                  </Button>
+                </div>
+
+                {showLinkPassenger && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border rounded-lg p-3 bg-gray-50">
+                    <select
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                      value={linkPassengerId}
+                      onChange={(e) => setLinkPassengerId(e.target.value)}
+                    >
+                      <option value="">Select passenger...</option>
+                      {passengers.map((p: any) => (
+                        <option key={p.id} value={p.id}>
+                          {p.first_name} {p.last_name}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      placeholder="Relationship (e.g. Assistant)"
+                      value={linkRelationship}
+                      onChange={(e) => setLinkRelationship(e.target.value)}
+                    />
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={linkIsDefault}
+                          onChange={(e) => setLinkIsDefault(e.target.checked)}
+                        />
+                        Default
+                      </label>
+                      <Button
+                        size="sm"
+                        disabled={!linkPassengerId || linkPassengerMutation.isPending}
+                        onClick={() => linkPassengerMutation.mutate()}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {contactPassengers.length === 0 ? (
+                  <p className="text-xs text-gray-400">No passengers linked yet</p>
+                ) : (
+                  contactPassengers.map((cp: any) => (
+                    <div key={cp.id} className="flex items-center justify-between text-sm border-b pb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            {cp.passenger?.first_name} {cp.passenger?.last_name}
+                          </p>
+                          {cp.is_default && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded-full">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        {cp.relationship && <p className="text-xs text-gray-400">{cp.relationship}</p>}
+                        {cp.passenger?.phone && (
+                          <p className="text-xs text-gray-400">{cp.passenger.phone}</p>
+                        )}
+                      </div>
+                      <button
+                        className="text-xs text-red-400"
+                        onClick={() =>
+                          unlinkPassengerMutation.mutate({
+                            contact_id: selectedContact.id,
+                            passenger_id: cp.passenger.id,
+                          })
+                        }
+                      >
+                        Unlink
+                      </button>
+                    </div>
+                  ))
                 )}
               </CardContent>
             </Card>

@@ -17,28 +17,44 @@ type Passenger = {
   allergies?: string;
   special_requirements?: string;
   notes?: string;
+  is_default?: boolean;
+  relationship?: string;
 };
 
 type Props = {
   onSelect: (passenger: Passenger | null) => void;
   selected?: Passenger | null;
+  contact_id?: string | null;
   placeholder?: string;
 };
 
 export function PassengerSearch({
   onSelect,
   selected,
+  contact_id,
   placeholder = 'Search passengers...',
 }: Props) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: passengers = [] } = useQuery({
+  const { data: contactPassengers = [] } = useQuery({
+    queryKey: ['contact-passengers', contact_id],
+    queryFn: async () => {
+      if (!contact_id) return [];
+      const res = await api.get(`/crm/contacts/${contact_id}/passengers`);
+      return res.data;
+    },
+    enabled: !!contact_id,
+  });
+
+  const { data: searchResults = [] } = useQuery({
     queryKey: ['passenger-search', query],
     queryFn: async () => {
       if (!query || query.length < 2) return [];
-      const res = await api.get('/crm/passengers/search/quick', { params: { q: query } });
+      const res = await api.get('/crm/passengers/search/quick', {
+        params: { q: query },
+      });
       return res.data;
     },
     enabled: query.length >= 2,
@@ -53,6 +69,15 @@ export function PassengerSearch({
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const displayPassengers =
+    query.length >= 2
+      ? searchResults
+      : contactPassengers.map((cp: any) => ({
+          ...cp.passenger,
+          is_default: cp.is_default,
+          relationship: cp.relationship,
+        }));
 
   if (selected) {
     return (
@@ -90,7 +115,11 @@ export function PassengerSearch({
         <Search size={14} className="absolute left-3 top-2.5 text-gray-400" />
         <Input
           className="pl-8 text-sm"
-          placeholder={placeholder}
+          placeholder={
+            contact_id && contactPassengers.length > 0
+              ? `${contactPassengers.length} passengers linked...`
+              : placeholder
+          }
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -99,9 +128,13 @@ export function PassengerSearch({
           onFocus={() => setOpen(true)}
         />
       </div>
-      {open && passengers.length > 0 && (
+
+      {open && displayPassengers.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-          {passengers.map((p: Passenger) => (
+          {contact_id && query.length < 2 && (
+            <p className="text-xs text-gray-400 px-3 py-1.5 bg-gray-50">Linked passengers</p>
+          )}
+          {displayPassengers.map((p: Passenger) => (
             <button
               key={p.id}
               className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-start gap-2"
@@ -112,10 +145,18 @@ export function PassengerSearch({
               }}
             >
               <User size={14} className="text-gray-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-medium">
-                  {p.first_name} {p.last_name}
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">
+                    {p.first_name} {p.last_name}
+                  </p>
+                  {p.is_default && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded-full">
+                      Default
+                    </span>
+                  )}
+                  {p.relationship && <span className="text-xs text-gray-400">{p.relationship}</span>}
+                </div>
                 {p.phone && (
                   <p className="text-xs text-gray-400 flex items-center gap-1">
                     <Phone size={10} /> {p.phone}
@@ -125,6 +166,21 @@ export function PassengerSearch({
               </div>
             </button>
           ))}
+          <button
+            className="w-full text-left px-3 py-2 text-xs text-blue-600 hover:bg-blue-50 border-t"
+            onClick={() => {
+              onSelect(null);
+              setOpen(false);
+            }}
+          >
+            + Create new passenger
+          </button>
+        </div>
+      )}
+
+      {open && contact_id && contactPassengers.length === 0 && query.length < 2 && (
+        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg">
+          <p className="text-xs text-gray-400 px-3 py-2">No linked passengers</p>
           <button
             className="w-full text-left px-3 py-2 text-xs text-blue-600 hover:bg-blue-50 border-t"
             onClick={() => {
