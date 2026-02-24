@@ -17,6 +17,15 @@ type PlatformVehicle = {
   images?: string[];
 };
 
+type VehicleTypeExtra = {
+  id: string;
+  name: string;
+  description?: string;
+  category: 'BABY_SEAT' | 'AMENITY' | 'OTHER';
+  price: number;
+  max_quantity: number;
+};
+
 type VehicleType = {
   id: string;
   type_name: string;
@@ -60,6 +69,14 @@ export default function VehicleTypesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [vehicleSearch, setVehicleSearch] = useState('');
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
+  const [extraForm, setExtraForm] = useState({
+    name: '',
+    description: '',
+    category: 'OTHER',
+    price: 0,
+    max_quantity: 1,
+  });
 
   const { data: vehicleTypes = [], isLoading } = useQuery<VehicleType[]>({
     queryKey: ['vehicle-types'],
@@ -75,6 +92,16 @@ export default function VehicleTypesPage() {
       const res = await platformApi.get('/platform-vehicles');
       return res.data;
     },
+  });
+
+  const { data: extras = [] } = useQuery<VehicleTypeExtra[]>({
+    queryKey: ['vehicle-type-extras', selectedTypeId],
+    queryFn: async () => {
+      if (!selectedTypeId) return [];
+      const res = await api.get(`/vehicle-types/${selectedTypeId}/extras`);
+      return res.data;
+    },
+    enabled: !!selectedTypeId,
   });
 
   const createMutation = useMutation({
@@ -100,6 +127,27 @@ export default function VehicleTypesPage() {
     mutationFn: (id: string) => api.delete(`/vehicle-types/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
+    },
+  });
+
+  const createExtraMutation = useMutation({
+    mutationFn: () => api.post(`/vehicle-types/${selectedTypeId}/extras`, extraForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle-type-extras', selectedTypeId] });
+      setExtraForm({
+        name: '',
+        description: '',
+        category: 'OTHER',
+        price: 0,
+        max_quantity: 1,
+      });
+    },
+  });
+
+  const deleteExtraMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/vehicle-types/extras/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle-type-extras', selectedTypeId] });
     },
   });
 
@@ -465,6 +513,131 @@ export default function VehicleTypesPage() {
                     ))}
                   </div>
                 )}
+
+                <div className="mt-3 border-t pt-3">
+                  <button
+                    className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                    onClick={() =>
+                      setSelectedTypeId(selectedTypeId === vt.id ? null : vt.id)
+                    }
+                  >
+                    <Plus size={12} /> Manage Extras {selectedTypeId === vt.id ? ' ▲' : ' ▼'}
+                  </button>
+
+                  {selectedTypeId === vt.id && (
+                    <div className="mt-3 space-y-3">
+                      {extras.length > 0 && (
+                        <div className="space-y-2">
+                          {extras.map((e: any) => (
+                            <div
+                              key={e.id}
+                              className="flex items-center justify-between text-sm bg-gray-50 px-3 py-2 rounded-lg"
+                            >
+                              <div>
+                                <span className="font-medium">{e.name}</span>
+                                <span
+                                  className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
+                                    e.category === 'BABY_SEAT'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : e.category === 'AMENITY'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {e.category}
+                                </span>
+                                {e.max_quantity > 1 && (
+                                  <span className="ml-1 text-xs text-gray-400">
+                                    max {e.max_quantity}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold">+${e.price}</span>
+                                <button
+                                  className="text-red-400 hover:text-red-600"
+                                  onClick={() => deleteExtraMutation.mutate(e.id)}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="border rounded-lg p-3 space-y-2 bg-white">
+                        <p className="text-xs font-medium text-gray-600">Add Extra Option</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            placeholder="Name *"
+                            className="text-xs h-8"
+                            value={extraForm.name}
+                            onChange={(e) =>
+                              setExtraForm((p: any) => ({ ...p, name: e.target.value }))
+                            }
+                          />
+                          <select
+                            className="border rounded-md px-2 py-1 text-xs"
+                            value={extraForm.category}
+                            onChange={(e) =>
+                              setExtraForm((p: any) => ({ ...p, category: e.target.value }))
+                            }
+                          >
+                            <option value="BABY_SEAT">Baby Seat</option>
+                            <option value="AMENITY">Amenity</option>
+                            <option value="OTHER">Other</option>
+                          </select>
+                          <Input
+                            type="number"
+                            placeholder="Price $"
+                            className="text-xs h-8"
+                            min={0}
+                            value={extraForm.price}
+                            onChange={(e) =>
+                              setExtraForm((p: any) => ({
+                                ...p,
+                                price: parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Max qty"
+                            className="text-xs h-8"
+                            min={1}
+                            value={extraForm.max_quantity}
+                            onChange={(e) =>
+                              setExtraForm((p: any) => ({
+                                ...p,
+                                max_quantity: parseInt(e.target.value) || 1,
+                              }))
+                            }
+                          />
+                          <Input
+                            placeholder="Description (optional)"
+                            className="text-xs h-8 col-span-2"
+                            value={extraForm.description}
+                            onChange={(e) =>
+                              setExtraForm((p: any) => ({
+                                ...p,
+                                description: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                        <Button
+                          size="sm"
+                          className="w-full h-8 text-xs"
+                          disabled={!extraForm.name}
+                          onClick={() => createExtraMutation.mutate()}
+                        >
+                          Add Extra
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
