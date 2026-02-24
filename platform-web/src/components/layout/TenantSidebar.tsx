@@ -42,6 +42,7 @@ const navItems = [
   { href: '/surcharges', label: 'Surcharges', icon: Percent },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/settings/airport-fees', label: 'Airport Fees', icon: Settings2 },
+  { href: '/settings/notifications', label: 'Notifications', icon: Settings2 },
   { href: '/settings/compliance', label: 'Compliance', icon: FileText },
 ];
 

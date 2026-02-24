@@ -11,6 +11,13 @@ const statusColors: Record<string, string> = {
   SUSPENDED: 'bg-red-100 text-red-700',
 };
 
+const subscriptionColors: Record<string, string> = {
+  ACTIVE: 'bg-green-100 text-green-700',
+  PAST_DUE: 'bg-orange-100 text-orange-700',
+  CANCELLED: 'bg-red-100 text-red-700',
+  TRIAL: 'bg-blue-100 text-blue-700',
+};
+
 export default function AdminTenantsPage() {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -31,6 +38,12 @@ export default function AdminTenantsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-tenants'] }),
   });
 
+  const tenantTypeMutation = useMutation({
+    mutationFn: ({ id, tenant_type }: { id: string; tenant_type: 'STANDARD' | 'PREMIUM' }) =>
+      api.patch(`/admin/tenants/${id}/type`, { tenant_type }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-tenants'] }),
+  });
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Tenants</h1>
@@ -44,12 +57,20 @@ export default function AdminTenantsPage() {
             <Card key={tenant.id}>
               <CardContent className="flex items-center justify-between p-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium">{tenant.name}</p>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[tenant.status]}`}
                     >
                       {tenant.status}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                      {tenant.tenant_type ?? 'STANDARD'}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${subscriptionColors[tenant.subscription_status ?? 'ACTIVE'] ?? 'bg-gray-100 text-gray-700'}`}
+                    >
+                      {tenant.subscription_status ?? 'ACTIVE'}
                     </span>
                   </div>
                   <p className="text-sm text-gray-400">
@@ -67,6 +88,19 @@ export default function AdminTenantsPage() {
                     onClick={() => window.location.href = `/admin/tenants/${tenant.id}/theme`}
                   >
                     Theme
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      tenantTypeMutation.mutate({
+                        id: tenant.id,
+                        tenant_type: (tenant.tenant_type ?? 'STANDARD') === 'PREMIUM' ? 'STANDARD' : 'PREMIUM',
+                      })
+                    }
+                    disabled={tenantTypeMutation.isPending}
+                  >
+                    Type: {(tenant.tenant_type ?? 'STANDARD') === 'PREMIUM' ? 'Set Standard' : 'Set Premium'}
                   </Button>
                   {tenant.status === 'PENDING' && (
                     <Button
