@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import TenantSidebar from '@/components/layout/TenantSidebar';
 import TopBar from '@/components/layout/TopBar';
@@ -13,19 +14,51 @@ export default function TenantLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const [checking, setChecking] = useState(true);
+  const { user, isAuthenticated, setAuth, clearAuth } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-    if (!['TENANT_ADMIN', 'TENANT_STAFF'].includes(user?.role ?? '')) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, user, router]);
+    const restoreSession = async () => {
+      if (isAuthenticated && ['TENANT_ADMIN', 'TENANT_STAFF'].includes(user?.role ?? '')) {
+        setChecking(false);
+        return;
+      }
 
-  if (!isAuthenticated) return null;
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        clearAuth();
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const res = await api.get('/auth/me');
+        const restoredUser = res.data?.user ?? res.data;
+
+        if (!restoredUser || !['TENANT_ADMIN', 'TENANT_STAFF'].includes(restoredUser.role ?? '')) {
+          clearAuth();
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          router.push('/login');
+          return;
+        }
+
+        setAuth(restoredUser, token, localStorage.getItem('refresh_token') ?? '');
+        setChecking(false);
+      } catch {
+        clearAuth();
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        router.push('/login');
+      }
+    };
+
+    restoreSession();
+  }, [isAuthenticated, user, setAuth, clearAuth, router]);
+
+  if (checking) {
+    return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+  }
 
   return (
     <ThemeProvider>

@@ -16,16 +16,45 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 401自动跳转登录
+// 401 自动 refresh token 并重试
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
+  async (err) => {
+    const originalRequest = err.config as any;
+
+    if (err.response?.status === 401 && !originalRequest?._retry) {
+      originalRequest._retry = true;
+
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('access_token');
-        window.location.href = '/login';
+        const refresh_token = localStorage.getItem('refresh_token');
+
+        if (refresh_token) {
+          try {
+            const res = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/auth/refresh`,
+              { refresh_token },
+            );
+
+            const { access_token, refresh_token: new_refresh } = res.data;
+            localStorage.setItem('access_token', access_token);
+            localStorage.setItem('refresh_token', new_refresh);
+
+            originalRequest.headers = originalRequest.headers ?? {};
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+            return api(originalRequest);
+          } catch {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+          }
+        } else {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+        }
       }
     }
+
     return Promise.reject(err);
   },
 );
