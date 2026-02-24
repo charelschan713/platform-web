@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
@@ -80,6 +80,7 @@ export default function BookingDetailPage() {
   const [fromPct, setFromPct] = useState('30');
   const [toPct, setToPct] = useState('70');
   const [transferNote, setTransferNote] = useState('');
+  const [selectedVehicleId, setSelectedVehicleId] = useState('');
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ['booking-detail', id],
@@ -89,13 +90,25 @@ export default function BookingDetailPage() {
     },
   });
 
+  useEffect(() => {
+    if (booking?.vehicle_id) setSelectedVehicleId(booking.vehicle_id);
+  }, [booking?.vehicle_id]);
+
   const { data: drivers = [] } = useQuery({
     queryKey: ['available-drivers'],
     queryFn: async () => {
       const res = await api.get('/drivers?status=ACTIVE');
-      return res.data?.data ?? [];
+      return res.data?.data ?? res.data ?? [];
     },
     enabled: showAssignDialog,
+  });
+
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['tenant-vehicles-active'],
+    queryFn: async () => {
+      const res = await api.get('/tenant-vehicles?is_active=true');
+      return Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+    },
   });
 
   const [overrideIds, setOverrideIds] = useState<string[]>([]);
@@ -218,6 +231,18 @@ export default function BookingDetailPage() {
     },
   });
 
+  const assignVehicleMutation = useMutation({
+    mutationFn: (vehicle_id: string | null) =>
+      api.patch(`/bookings/${id}`, { vehicle_id }),
+    onSuccess: () => invalidate(),
+  });
+
+  const statusUpdateMutation = useMutation({
+    mutationFn: (booking_status: string) =>
+      api.patch(`/bookings/${id}`, { booking_status }),
+    onSuccess: () => invalidate(),
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -245,6 +270,29 @@ export default function BookingDetailPage() {
   const isUnassigned = booking.driver_status === 'UNASSIGNED';
   const isJobDone = booking.driver_status === 'JOB_DONE';
   const isPaid = booking.payment_status === 'PAID';
+
+  const statusActions: Record<string, Array<{ label: string; status: string; style: string }>> = {
+    PENDING: [
+      { label: 'Confirm Booking', status: 'CONFIRMED', style: 'bg-black text-white' },
+      {
+        label: 'Cancel',
+        status: 'CANCELLED',
+        style: 'bg-red-50 text-red-600 border border-red-200',
+      },
+    ],
+    CONFIRMED: [
+      { label: 'Start Trip', status: 'IN_PROGRESS', style: 'bg-black text-white' },
+      {
+        label: 'Cancel',
+        status: 'CANCELLED',
+        style: 'bg-red-50 text-red-600 border border-red-200',
+      },
+    ],
+    IN_PROGRESS: [
+      { label: 'Complete Trip', status: 'COMPLETED', style: 'bg-green-600 text-white' },
+    ],
+  };
+  const actions = statusActions[bookingStatus] ?? [];
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -345,6 +393,21 @@ export default function BookingDetailPage() {
               Cancel
             </Button>
           )}
+        </div>
+      )}
+
+      {actions.length > 0 && (
+        <div className="flex gap-2 mt-1">
+          {actions.map((action) => (
+            <button
+              key={action.status}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium ${action.style}`}
+              onClick={() => statusUpdateMutation.mutate(action.status)}
+              disabled={statusUpdateMutation.isPending}
+            >
+              {action.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -541,10 +604,82 @@ export default function BookingDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-gray-500 uppercase tracking-wide">
+              Fare Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+              <p className="font-semibold text-sm mb-3">Fare Breakdown</p>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Base Fare</span>
+                  <span>A${(booking.estimated_fare ?? booking.fare ?? 0).toFixed(2)}</span>
+                </div>
+                {(booking.toll_cost ?? booking.toll ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">
+                      Tolls {booking.toll_estimated && '(est.)'}
+                    </span>
+                    <span>A${(booking.toll_cost ?? booking.toll ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                {(booking.extras_total ?? booking.extras ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Extras</span>
+                    <span>A${(booking.extras_total ?? booking.extras ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                {(booking.selected_extras ?? []).map((e: any, i: number) => (
+                  <div key={i} className="flex justify-between pl-4 text-gray-500">
+                    <span>{e.name} × {e.quantity ?? 1}</span>
+                    <span>A${((e.price ?? 0) * (e.quantity ?? 1)).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="border-t pt-2 flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>A${(booking.total_fare ?? booking.total_price ?? 0).toFixed(2)}</span>
+                </div>
+                {booking.payment_status === 'PAID' && (
+                  <div className="flex justify-between text-green-600 text-xs">
+                    <span>✓ Paid</span>
+                    <span>A${(booking.total_fare ?? booking.total_price ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+              {booking.toll_estimated && (
+                <p className="text-xs text-gray-400 mt-2">* Toll charges are estimated and may vary</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-500 uppercase tracking-wide">
               Driver & Vehicle
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            <div className="space-y-2 pb-2 border-b">
+              <Label>Assign Vehicle</Label>
+              <select
+                className="w-full border rounded px-3 py-2 text-sm"
+                value={selectedVehicleId}
+                onChange={async (e) => {
+                  const next = e.target.value;
+                  setSelectedVehicleId(next);
+                  await assignVehicleMutation.mutateAsync(next || null);
+                }}
+              >
+                <option value="">— Unassigned —</option>
+                {vehicles.map((v: any) => (
+                  <option key={v.id} value={v.id}>
+                    {v.registration_plate ?? v.plate_number ?? '-'} — {v.make} {v.model}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {booking.driver_id ? (
               <>
                 <div className="flex justify-between">

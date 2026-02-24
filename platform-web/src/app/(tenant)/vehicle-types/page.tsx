@@ -27,6 +27,7 @@ type VehicleTypeExtra = {
 };
 
 type VehicleType = {
+  include_tolls?: boolean;
   id: string;
   type_name: string;
   description?: string;
@@ -90,6 +91,7 @@ const EMPTY_FORM = {
   max_baby_seats: '',
   minimum_fare: 0,
   currency: 'AUD',
+  include_tolls: true,
   required_platform_vehicle_ids: [] as string[],
 };
 
@@ -222,6 +224,7 @@ export default function VehicleTypesPage() {
           : String(vt.max_baby_seats),
       minimum_fare: vt.minimum_fare,
       currency: vt.currency,
+      include_tolls: vt.include_tolls ?? true,
       required_platform_vehicle_ids: (vt.requirements ?? []).map(
         (r) => r.platform_vehicle.id,
       ),
@@ -432,6 +435,28 @@ export default function VehicleTypesPage() {
                   </select>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between border-t pt-4">
+              <div>
+                <p className="text-sm font-medium">Include Tolls in Quote</p>
+                <p className="text-xs text-gray-400">
+                  Show estimated toll charges to customers
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, include_tolls: !p.include_tolls }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  form.include_tolls ? 'bg-black' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    form.include_tolls ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
 
             <div className="space-y-2">
