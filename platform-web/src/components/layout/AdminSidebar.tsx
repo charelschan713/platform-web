@@ -11,6 +11,7 @@ const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
   { href: '/admin/vehicles', label: 'Vehicle Library', icon: Car },
+  { href: '/admin/airports', label: 'Airports', icon: Car },
   { href: '/admin/revenue', label: 'Revenue', icon: DollarSign },
 ];
 

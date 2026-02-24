@@ -41,6 +41,7 @@ const navItems = [
   { href: '/reports', label: 'Reports', icon: BarChart2 },
   { href: '/surcharges', label: 'Surcharges', icon: Percent },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/settings/airport-fees', label: 'Airport Fees', icon: Settings2 },
 ];
 
 export default function TenantSidebar() {
