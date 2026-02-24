@@ -61,6 +61,13 @@ export default function AdminTenantsPage() {
                 </div>
 
                 <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.location.href = `/admin/tenants/${tenant.id}/theme`}
+                  >
+                    Theme
+                  </Button>
                   {tenant.status === 'PENDING' && (
                     <Button
                       size="sm"

@@ -58,7 +58,10 @@ export default function TenantSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r flex flex-col">
+    <aside
+      className="w-64 border-r flex flex-col"
+      style={{ backgroundColor: 'var(--sidebar-bg)', color: 'var(--sidebar-fg)' }}
+    >
       <div className="p-6 border-b">
         <h1 className="font-bold text-lg">{process.env.NEXT_PUBLIC_APP_NAME}</h1>
         <p className="text-xs text-gray-500 mt-1 truncate">

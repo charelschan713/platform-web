@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import TenantSidebar from '@/components/layout/TenantSidebar';
 import TopBar from '@/components/layout/TopBar';
+import ThemeProvider from '@/components/ThemeProvider';
 
 export default function TenantLayout({
   children,
@@ -27,12 +28,14 @@ export default function TenantLayout({
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <TenantSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+    <ThemeProvider>
+      <div className="tenant-theme flex h-screen bg-gray-100">
+        <TenantSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }
