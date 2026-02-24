@@ -15,7 +15,7 @@ import {
 import { CheckCircle, Clock, FileText } from 'lucide-react';
 
 const STATUS_STYLES: Record<string, string> = {
-  DRAFT: 'bg-gray-100 text-gray-600',
+  DRAFT: 'bg-muted text-gray-600',
   SENT: 'bg-yellow-100 text-yellow-700',
   PAID: 'bg-green-100 text-green-700',
 };
@@ -170,7 +170,7 @@ export default function TenantInvoicesPage() {
 
             <CardContent className="space-y-6">
               {selected.drivers && (
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 bg-muted rounded-lg p-4">
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Driver</p>
                     <p className="font-medium">
@@ -239,7 +239,7 @@ export default function TenantInvoicesPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="bg-muted rounded-lg p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal</span>
                   <span>

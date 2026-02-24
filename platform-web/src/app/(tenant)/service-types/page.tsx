@@ -99,7 +99,7 @@ export default function ServiceTypesPage() {
         <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">Platform Standard</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {PLATFORM_TYPES.map((pt) => (
-            <Card key={pt.id} className="bg-gray-50 border-dashed">
+            <Card key={pt.id} className="bg-muted border-dashed">
               <CardContent className="p-3">
                 <p className="font-semibold text-sm">{pt.name}</p>
                 <p className="text-xs text-gray-400 mt-1">{pt.base}</p>
@@ -251,7 +251,7 @@ export default function ServiceTypesPage() {
                   </div>
 
                   <div className="flex gap-2 text-xs">
-                    <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                    <span className="bg-muted px-2 py-0.5 rounded-full">
                       Based on {st.base_type === 'POINT_TO_POINT' ? 'P2P' : 'Hourly'}
                     </span>
                     <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">

@@ -42,11 +42,11 @@ export default function TransfersPage() {
         <p className="text-sm text-gray-500 mt-1">Manage booking transfers between operators</p>
       </div>
 
-      <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex bg-muted rounded-lg p-1 w-fit">
         <button
           onClick={() => setTab('incoming')}
           className={`px-4 py-1.5 text-sm rounded-md transition-all ${
-            tab === 'incoming' ? 'bg-white font-semibold shadow-sm' : 'text-gray-500'
+            tab === 'incoming' ? 'bg-card font-semibold shadow-sm' : 'text-gray-500'
           }`}
         >
           Incoming
@@ -59,7 +59,7 @@ export default function TransfersPage() {
         <button
           onClick={() => setTab('outgoing')}
           className={`px-4 py-1.5 text-sm rounded-md transition-all ${
-            tab === 'outgoing' ? 'bg-white font-semibold shadow-sm' : 'text-gray-500'
+            tab === 'outgoing' ? 'bg-card font-semibold shadow-sm' : 'text-gray-500'
           }`}
         >
           Outgoing

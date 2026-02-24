@@ -86,7 +86,7 @@ export default function ApiKeysPage() {
             </div>
             <p className="text-xs text-green-700">Copy this key now. It will not be shown again.</p>
             <div className="flex gap-2">
-              <Input value={newKey} readOnly className="font-mono text-sm bg-white" />
+              <Input value={newKey} readOnly className="font-mono text-sm bg-card" />
               <Button size="sm" onClick={() => copyKey(newKey)}>
                 {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
               </Button>
@@ -109,7 +109,7 @@ export default function ApiKeysPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {showCreate && (
-            <div className="bg-gray-50 rounded-lg p-4 space-y-3 border">
+            <div className="bg-muted rounded-lg p-4 space-y-3 border">
               <p className="text-sm font-medium">Create New API Key</p>
               <div className="space-y-1">
                 <Label>Key Name *</Label>
@@ -151,7 +151,7 @@ export default function ApiKeysPage() {
               {apiKeys.map((key: any) => (
                 <div
                   key={key.id}
-                  className={`border rounded-lg p-3 space-y-2 ${!key.is_active ? 'opacity-50 bg-gray-50' : ''}`}
+                  className={`border rounded-lg p-3 space-y-2 ${!key.is_active ? 'opacity-50 bg-muted' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -160,7 +160,7 @@ export default function ApiKeysPage() {
                     </div>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${
-                        key.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        key.is_active ? 'bg-green-100 text-green-700' : 'bg-muted text-gray-500'
                       }`}
                     >
                       {key.is_active ? 'Active' : 'Revoked'}

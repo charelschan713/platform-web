@@ -149,7 +149,7 @@ export default function ServiceCitiesPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">{city.city_name}</p>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-muted text-gray-600 px-2 py-0.5 rounded">
                         {city.country_code}
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">

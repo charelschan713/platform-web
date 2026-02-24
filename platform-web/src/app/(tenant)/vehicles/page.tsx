@@ -204,12 +204,12 @@ export default function VehiclesPage() {
                     onBlur={() => setTimeout(() => setShowPlatformDropdown(false), 200)}
                   />
                   {showPlatformDropdown && filteredPlatform.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-card border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                       {filteredPlatform.map((pv: any) => (
                         <button
                           key={pv.id}
                           type="button"
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center gap-2"
                           onClick={() => {
                             setForm((p) => ({
                               ...p,
@@ -358,7 +358,7 @@ export default function VehiclesPage() {
                     className={`text-xs px-2 py-1 rounded-full font-medium ${
                       v.is_active
                         ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-500'
+                        : 'bg-muted text-gray-500'
                     }`}
                   >
                     {v.is_active ? 'Active' : 'Inactive'}
@@ -366,7 +366,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bg-gray-100 px-2 py-1 rounded-md font-mono font-bold">
+                  <span className="bg-muted px-2 py-1 rounded-md font-mono font-bold">
                     {v.registration_plate}
                   </span>
                   <span>👥 {v.seats} seats</span>

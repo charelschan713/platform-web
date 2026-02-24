@@ -255,7 +255,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+              <div className="bg-muted rounded-lg p-3 space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Tenant ID</span>
                   <span className="font-mono text-xs">{tenant?.id}</span>
@@ -440,7 +440,7 @@ export default function SettingsPage() {
                 />
                 <p className="text-xs text-gray-400">
                   Webhook endpoint:
-                  <span className="font-mono ml-1 bg-gray-100 px-1 rounded">/payments/webhook</span>
+                  <span className="font-mono ml-1 bg-muted px-1 rounded">/payments/webhook</span>
                 </p>
               </div>
 

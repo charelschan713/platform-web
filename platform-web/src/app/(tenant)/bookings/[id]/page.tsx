@@ -36,7 +36,7 @@ const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-blue-100 text-blue-700',
   CONFIRMED: 'bg-green-100 text-green-700',
   IN_PROGRESS: 'bg-yellow-100 text-yellow-700',
-  COMPLETED: 'bg-gray-100 text-gray-600',
+  COMPLETED: 'bg-muted text-gray-600',
   CANCELLED: 'bg-red-100 text-red-600',
   NO_SHOW: 'bg-orange-100 text-orange-700',
 };
@@ -45,7 +45,7 @@ const PAYMENT_STYLES: Record<string, string> = {
   UNPAID: 'bg-red-100 text-red-600',
   PAID: 'bg-green-100 text-green-700',
   PARTIALLY_REFUNDED: 'bg-yellow-100 text-yellow-700',
-  REFUNDED: 'bg-gray-100 text-gray-500',
+  REFUNDED: 'bg-muted text-gray-500',
 };
 
 export default function BookingDetailPage() {
@@ -305,14 +305,14 @@ export default function BookingDetailPage() {
             <h1 className="text-xl font-bold font-mono">#{booking.booking_number}</h1>
             <span
               className={`text-xs px-2 py-1 rounded-full font-medium ${
-                STATUS_STYLES[bookingStatus] ?? 'bg-gray-100 text-gray-600'
+                STATUS_STYLES[bookingStatus] ?? 'bg-muted text-gray-600'
               }`}
             >
               {bookingStatus}
             </span>
             <span
               className={`text-xs px-2 py-1 rounded-full ${
-                PAYMENT_STYLES[booking.payment_status] ?? 'bg-gray-100 text-gray-500'
+                PAYMENT_STYLES[booking.payment_status] ?? 'bg-muted text-gray-500'
               }`}
             >
               {booking.payment_status}
@@ -608,7 +608,7 @@ export default function BookingDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+            <div className="bg-muted rounded-xl p-4 space-y-2">
               <p className="font-semibold text-sm mb-3">Fare Breakdown</p>
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
@@ -820,7 +820,7 @@ export default function BookingDetailPage() {
               </Select>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+            <div className="bg-muted rounded-lg p-3 space-y-1 text-sm">
               <p className="text-xs text-gray-500 font-medium mb-2">Customer Paid</p>
               <div className="flex justify-between">
                 <span className="text-gray-500">Total</span>
@@ -862,7 +862,7 @@ export default function BookingDetailPage() {
                 </div>
               </div>
               {driverFare && (
-                <div className="bg-gray-50 rounded p-2 text-xs text-gray-600">
+                <div className="bg-muted rounded p-2 text-xs text-gray-600">
                   Driver Total: {booking.currency} ${' '}
                   {(
                     parseFloat(driverFare || '0') +
@@ -897,7 +897,7 @@ export default function BookingDetailPage() {
             <DialogTitle>Fulfil Booking</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+            <div className="bg-muted rounded-lg p-3 text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-gray-500">Original Charge</span>
                 <span>
@@ -933,7 +933,7 @@ export default function BookingDetailPage() {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded p-2 text-sm">
+            <div className="bg-muted rounded p-2 text-sm">
               Final Amount: {booking.currency} ${' '}
               {(
                 booking.charged_amount +
@@ -1036,7 +1036,7 @@ export default function BookingDetailPage() {
             <DialogTitle>Supplement / Credit Note</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+            <div className="bg-muted rounded-lg p-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Total Charged</span>
                 <span className="font-bold">

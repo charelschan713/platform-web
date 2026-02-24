@@ -9,13 +9,13 @@ const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-blue-100 text-blue-700',
   CONFIRMED: 'bg-green-100 text-green-700',
   IN_PROGRESS: 'bg-yellow-100 text-yellow-700',
-  COMPLETED: 'bg-gray-100 text-gray-600',
+  COMPLETED: 'bg-muted text-gray-600',
   CANCELLED: 'bg-red-100 text-red-600',
   NO_SHOW: 'bg-orange-100 text-orange-700',
 };
 
 const DRIVER_STATUS_STYLES: Record<string, string> = {
-  UNASSIGNED: 'bg-gray-100 text-gray-500',
+  UNASSIGNED: 'bg-muted text-gray-500',
   ASSIGNED: 'bg-blue-100 text-blue-600',
   ACCEPTED: 'bg-indigo-100 text-indigo-600',
   ON_THE_WAY: 'bg-yellow-100 text-yellow-700',
@@ -111,7 +111,7 @@ export default function DashboardPage() {
       <button
         type="button"
         onClick={() => router.push(`/bookings/${booking.id}`)}
-        className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors"
+        className="w-full text-left p-3 hover:bg-muted rounded-lg transition-colors"
       >
         <div className="flex items-start justify-between">
           <div className="space-y-0.5 flex-1">
@@ -119,14 +119,14 @@ export default function DashboardPage() {
               <span className="font-mono text-xs font-bold">#{booking.booking_number}</span>
               <span
                 className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'
+                  STATUS_STYLES[status] ?? 'bg-muted text-gray-600'
                 }`}
               >
                 {status}
               </span>
               <span
                 className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  DRIVER_STATUS_STYLES[booking.driver_status] ?? 'bg-gray-100 text-gray-400'
+                  DRIVER_STATUS_STYLES[booking.driver_status] ?? 'bg-muted text-gray-400'
                 }`}
               >
                 {booking.driver_status}

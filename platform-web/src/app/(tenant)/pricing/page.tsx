@@ -196,7 +196,7 @@ export default function PricingPage() {
                     <span className="font-semibold">
                       {rule.vehicle_type_name ?? rule.vehicle_type_id}
                     </span>
-                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
                       {rule.service_type?.replace(/_/g, ' ')}
                     </span>
                     {rule.city_name && (

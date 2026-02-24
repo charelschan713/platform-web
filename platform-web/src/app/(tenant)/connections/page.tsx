@@ -24,7 +24,7 @@ import {
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
   ACTIVE: 'bg-green-100 text-green-700',
-  TERMINATED: 'bg-gray-100 text-gray-500',
+  TERMINATED: 'bg-muted text-gray-500',
 };
 
 const STATUS_ICONS: Record<string, any> = {
@@ -196,7 +196,7 @@ export default function ConnectionsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600">
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-gray-600">
                           {conn.partner?.tenant_name?.[0] ?? '?'}
                         </div>
                         <div>
@@ -303,7 +303,7 @@ export default function ConnectionsPage() {
                           <span>To: {transfer.to_tenant?.tenant_name}</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="bg-muted px-2 py-0.5 rounded">
                             Split: {transfer.from_percentage}% / {transfer.to_percentage}%
                           </span>
                           {booking?.total_price && (
@@ -387,7 +387,7 @@ export default function ConnectionsPage() {
                     onClick={() => setSelectedTenant(tenant)}
                     className={`w-full text-left p-3 rounded-lg border transition-all ${
                       selectedTenant?.id === tenant.id
-                        ? 'border-gray-900 bg-gray-50'
+                        ? 'border-gray-900 bg-muted'
                         : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
@@ -403,7 +403,7 @@ export default function ConnectionsPage() {
             )}
 
             {selectedTenant && (
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-muted rounded-lg p-3">
                 <p className="text-xs text-gray-400">Selected</p>
                 <p className="font-semibold">{selectedTenant.tenant_name}</p>
               </div>

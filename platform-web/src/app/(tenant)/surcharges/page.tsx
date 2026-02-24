@@ -155,13 +155,13 @@ export default function SurchargesPage() {
         </Button>
       </div>
 
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+      <div className="flex gap-1 bg-muted p-1 rounded-xl w-fit">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id as Tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.id ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'
+              tab === t.id ? 'bg-card shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             <t.icon className="w-4 h-4" />
@@ -179,7 +179,7 @@ export default function SurchargesPage() {
       ) : (
         <div className="grid gap-3">
           {items.map((item: any) => (
-            <div key={item.id} className="flex items-center justify-between p-4 bg-white border rounded-xl">
+            <div key={item.id} className="flex items-center justify-between p-4 bg-card border rounded-xl">
               <div>
                 <p className="font-medium">{item.name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
@@ -196,7 +196,7 @@ export default function SurchargesPage() {
               <div className="flex items-center gap-2">
                 <span
                   className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    item.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                    item.is_active ? 'bg-green-100 text-green-700' : 'bg-muted text-gray-500'
                   }`}
                 >
                   {item.is_active ? 'Active' : 'Inactive'}
@@ -251,7 +251,7 @@ export default function SurchargesPage() {
                 <div className="flex items-center justify-between">
                   <Label>Recurring Annually</Label>
                   <button type="button" onClick={() => setForm((p: any) => ({ ...p, is_recurring: !p.is_recurring }))} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_recurring ? 'bg-black' : 'bg-gray-200'}`}>
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_recurring ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${form.is_recurring ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               </>
@@ -305,7 +305,7 @@ export default function SurchargesPage() {
             <div className="flex items-center justify-between pt-2">
               <Label>Active</Label>
               <button type="button" onClick={() => setForm((p: any) => ({ ...p, is_active: !p.is_active }))} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_active ? 'bg-black' : 'bg-gray-200'}`}>
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
 

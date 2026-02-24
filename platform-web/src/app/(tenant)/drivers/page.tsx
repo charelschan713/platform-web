@@ -20,7 +20,7 @@ const EMPTY_FORM = {
 const LOGIN_STATUS_STYLE: Record<string, string> = {
   LOGIN_READY: 'bg-green-100 text-green-700',
   INVITED: 'bg-yellow-100 text-yellow-700',
-  NO_LOGIN: 'bg-gray-100 text-gray-600',
+  NO_LOGIN: 'bg-muted text-gray-600',
 };
 
 export default function DriversPage() {
@@ -168,10 +168,10 @@ export default function DriversPage() {
           {filtered.map((driver) => {
             const loginKey = getLoginKey(driver);
             return (
-              <div key={driver.id} className="p-4 bg-white border rounded-xl hover:shadow-sm transition-shadow space-y-3">
+              <div key={driver.id} className="p-4 bg-card border rounded-xl hover:shadow-sm transition-shadow space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-semibold text-gray-600">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold text-gray-600">
                       {driver.first_name?.[0] ?? '?'}{driver.last_name?.[0] ?? ''}
                     </div>
                     <div>
@@ -190,7 +190,7 @@ export default function DriversPage() {
                     </span>
                     <button
                       onClick={() => handleToggle(driver)}
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${driver.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${driver.is_active ? 'bg-green-100 text-green-700' : 'bg-muted text-gray-500'}`}
                     >
                       {driver.is_active ? 'Active' : 'Inactive'}
                     </button>
@@ -248,7 +248,7 @@ export default function DriversPage() {
                 onClick={() => setForm((p) => ({ ...p, is_active: !p.is_active }))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_active ? 'bg-black' : 'bg-gray-200'}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
             <div className="flex gap-3 pt-4 border-t">

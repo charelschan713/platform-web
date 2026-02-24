@@ -126,7 +126,7 @@ export default function BookingsPage() {
           <button
             key={tab.key}
             className={`px-3 py-1.5 rounded-full text-sm border ${
-              statusTab === tab.key ? 'bg-black text-white' : 'bg-white text-gray-700'
+              statusTab === tab.key ? 'bg-black text-white' : 'bg-card text-gray-700'
             }`}
             onClick={() => setStatusTab(tab.key)}
           >
@@ -204,7 +204,7 @@ export default function BookingsPage() {
                   {(booking.tags ?? []).map((tag: string) => (
                     <span
                       key={`${booking.id}-${tag}`}
-                      className={`text-xs px-2 py-0.5 rounded-full ${TAG_STYLES[tag] ?? 'bg-gray-100 text-gray-700'}`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${TAG_STYLES[tag] ?? 'bg-muted text-gray-700'}`}
                     >
                       {tag}
                     </span>

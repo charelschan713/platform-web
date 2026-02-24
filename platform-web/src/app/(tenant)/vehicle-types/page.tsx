@@ -361,7 +361,7 @@ export default function VehicleTypesPage() {
               </div>
 
               {form.pricing_model === 'INCLUDED' && (
-                <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-3 p-3 bg-muted rounded-lg">
                   <div className="space-y-1">
                     <Label className="text-xs">Included KM</Label>
                     <Input type="number" min={0} value={form.included_km} onChange={(e) => setForm((p) => ({ ...p, included_km: parseInt(e.target.value, 10) || 0 }))} />
@@ -452,7 +452,7 @@ export default function VehicleTypesPage() {
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${
                     form.include_tolls ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
@@ -639,7 +639,7 @@ export default function VehicleTypesPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-sm bg-gray-50 rounded-lg p-3">
+                <div className="grid grid-cols-2 gap-2 text-sm bg-muted rounded-lg p-3">
                   <div>
                     <p className="text-xs text-gray-400">Base Fare</p>
                     <p className="font-semibold">{vt.currency} ${vt.base_fare?.toFixed(2)}</p>
@@ -665,7 +665,7 @@ export default function VehicleTypesPage() {
                     {vt.requirements.map((r: any) => (
                       <span
                         key={r.id}
-                        className="text-xs bg-gray-100 px-2 py-0.5 rounded-full"
+                        className="text-xs bg-muted px-2 py-0.5 rounded-full"
                       >
                         🚗 {r.platform_vehicle.make} {r.platform_vehicle.model}
                       </span>
@@ -690,7 +690,7 @@ export default function VehicleTypesPage() {
                           {extras.map((e: any) => (
                             <div
                               key={e.id}
-                              className="flex items-center justify-between text-sm bg-gray-50 px-3 py-2 rounded-lg"
+                              className="flex items-center justify-between text-sm bg-muted px-3 py-2 rounded-lg"
                             >
                               <div>
                                 <span className="font-medium">{e.name}</span>
@@ -700,7 +700,7 @@ export default function VehicleTypesPage() {
                                       ? 'bg-blue-100 text-blue-700'
                                       : e.category === 'AMENITY'
                                         ? 'bg-purple-100 text-purple-700'
-                                        : 'bg-gray-100 text-gray-600'
+                                        : 'bg-muted text-gray-600'
                                   }`}
                                 >
                                   {e.category}
@@ -725,7 +725,7 @@ export default function VehicleTypesPage() {
                         </div>
                       )}
 
-                      <div className="border rounded-lg p-3 space-y-2 bg-white">
+                      <div className="border rounded-lg p-3 space-y-2 bg-card">
                         <p className="text-xs font-medium text-gray-600">Add Extra Option</p>
                         <div className="grid grid-cols-2 gap-2">
                           <Input

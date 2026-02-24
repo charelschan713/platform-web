@@ -226,7 +226,7 @@ export default function CrmPage() {
   return (
     <div className="flex h-full gap-4">
       <div className="w-80 shrink-0 space-y-3">
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-muted rounded-lg p-1">
           {TABS.map((t) => (
             <button
               key={t}
@@ -237,7 +237,7 @@ export default function CrmPage() {
                 setSearch('');
               }}
               className={`flex-1 py-1.5 text-sm rounded-md transition-all ${
-                tab === t ? 'bg-white font-semibold shadow-sm' : 'text-gray-500'
+                tab === t ? 'bg-card font-semibold shadow-sm' : 'text-gray-500'
               }`}
             >
               {t}
@@ -316,7 +316,7 @@ export default function CrmPage() {
                               ? 'bg-yellow-100 text-yellow-700'
                               : tag === 'BLACKLIST'
                                 ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-600'
+                                : 'bg-muted text-gray-600'
                           }`}
                         >
                           {tag}
@@ -441,7 +441,7 @@ export default function CrmPage() {
                     {contactForm.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs bg-gray-100 px-2 py-0.5 rounded-full cursor-pointer"
+                        className="text-xs bg-muted px-2 py-0.5 rounded-full cursor-pointer"
                         onClick={() =>
                           setContactForm((p) => ({
                             ...p,
@@ -769,7 +769,7 @@ export default function CrmPage() {
                               ? 'bg-yellow-100 text-yellow-700'
                               : tag === 'BLACKLIST'
                                 ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-600'
+                                : 'bg-muted text-gray-600'
                           }`}
                         >
                           {tag}
@@ -809,7 +809,7 @@ export default function CrmPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 bg-gray-50 rounded-lg p-3 text-sm">
+                <div className="grid grid-cols-3 gap-3 bg-muted rounded-lg p-3 text-sm">
                   <div>
                     <p className="text-xs text-gray-400">Total Bookings</p>
                     <p className="font-bold">{selectedContact.total_bookings ?? 0}</p>
@@ -861,7 +861,7 @@ export default function CrmPage() {
                 {selectedContact.notes && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">Notes</p>
-                    <p className="text-sm bg-gray-50 rounded p-2">{selectedContact.notes}</p>
+                    <p className="text-sm bg-muted rounded p-2">{selectedContact.notes}</p>
                   </div>
                 )}
 
@@ -889,7 +889,7 @@ export default function CrmPage() {
                 </div>
 
                 {showLinkPassenger && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border rounded-lg p-3 bg-gray-50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border rounded-lg p-3 bg-muted">
                     <select
                       className="w-full border rounded-md px-3 py-2 text-sm"
                       value={linkPassengerId}
@@ -1036,7 +1036,7 @@ export default function CrmPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3 text-sm">
+                <div className="grid grid-cols-2 gap-3 bg-muted rounded-lg p-3 text-sm">
                   <div>
                     <p className="text-xs text-gray-400">Total Rides</p>
                     <p className="font-bold">{selectedPassenger.total_rides ?? 0}</p>
@@ -1083,7 +1083,7 @@ export default function CrmPage() {
                   {selectedPassenger.special_requirements && (
                     <div className="mt-2">
                       <p className="text-xs text-gray-400">Special Requirements</p>
-                      <p className="text-sm bg-gray-50 rounded p-2 mt-1">
+                      <p className="text-sm bg-muted rounded p-2 mt-1">
                         {selectedPassenger.special_requirements}
                       </p>
                     </div>
@@ -1092,7 +1092,7 @@ export default function CrmPage() {
                   {selectedPassenger.notes && (
                     <div className="mt-2">
                       <p className="text-xs text-gray-400">Notes</p>
-                      <p className="text-sm bg-gray-50 rounded p-2 mt-1">{selectedPassenger.notes}</p>
+                      <p className="text-sm bg-muted rounded p-2 mt-1">{selectedPassenger.notes}</p>
                     </div>
                   )}
                 </div>

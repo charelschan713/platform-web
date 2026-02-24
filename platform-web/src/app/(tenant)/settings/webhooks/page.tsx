@@ -146,7 +146,7 @@ export default function WebhooksPage() {
               Save this secret. Use it to verify webhook signatures. It won&apos;t be shown again.
             </p>
             <div className="flex gap-2">
-              <Input value={newSecret} readOnly className="font-mono text-xs bg-white" />
+              <Input value={newSecret} readOnly className="font-mono text-xs bg-card" />
               <Button size="sm" onClick={() => navigator.clipboard.writeText(newSecret)}>
                 Copy
               </Button>
@@ -256,7 +256,7 @@ export default function WebhooksPage() {
                     <p className="font-semibold text-sm">{wh.webhook_name}</p>
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded-full ${
-                        wh.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        wh.is_active ? 'bg-green-100 text-green-700' : 'bg-muted text-gray-500'
                       }`}
                     >
                       {wh.is_active ? 'On' : 'Off'}
@@ -302,7 +302,7 @@ export default function WebhooksPage() {
                     <p className="text-xs text-gray-400">Subscribed Events</p>
                     <div className="flex flex-wrap gap-1">
                       {selectedWebhook.events.map((e: string) => (
-                        <span key={e} className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded">
+                        <span key={e} className="text-xs font-mono bg-muted px-2 py-0.5 rounded">
                           {e}
                         </span>
                       ))}
@@ -358,7 +358,7 @@ export default function WebhooksPage() {
                       {deliveryLogs.map((log: any) => (
                         <div
                           key={log.id}
-                          className="flex items-start gap-3 p-2 rounded-lg bg-gray-50 text-sm"
+                          className="flex items-start gap-3 p-2 rounded-lg bg-muted text-sm"
                         >
                           {log.success ? (
                             <CheckCircle size={14} className="text-green-500 mt-0.5 shrink-0" />
