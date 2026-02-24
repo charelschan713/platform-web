@@ -10,14 +10,29 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
         const res = await api.get('/tenant-settings/theme');
         const t = res.data ?? {};
         const root = document.documentElement;
-        root.style.setProperty('--primary', t.primary_color ?? '#000000');
-        root.style.setProperty('--primary-foreground', t.primary_foreground ?? '#FFFFFF');
-        root.style.setProperty('--sidebar-bg', t.sidebar_bg ?? '#FFFFFF');
-        root.style.setProperty('--sidebar-fg', t.sidebar_fg ?? '#000000');
-        root.style.setProperty('--card-bg', t.card_bg ?? '#FFFFFF');
-        root.style.setProperty('--accent', t.accent_color ?? '#000000');
+        const isDark = t.theme_mode === 'dark';
+        const primary = t.primary_color ?? '#000000';
+        const primaryFg = t.primary_foreground ?? '#FFFFFF';
+        const sidebarBg = t.sidebar_bg ?? '#FFFFFF';
+        const sidebarFg = t.sidebar_fg ?? '#000000';
+        const cardBg = t.card_bg ?? '#FFFFFF';
+        const accent = t.accent_color ?? primary;
 
-        if (t.theme_mode === 'dark') root.classList.add('dark');
+        root.style.setProperty('--primary', primary);
+        root.style.setProperty('--primary-foreground', primaryFg);
+        root.style.setProperty('--sidebar-bg', sidebarBg);
+        root.style.setProperty('--sidebar-fg', sidebarFg);
+        root.style.setProperty('--card-bg', cardBg);
+        root.style.setProperty('--accent', accent);
+        root.style.setProperty('--background', isDark ? '#0B0F1A' : '#FFFFFF');
+        root.style.setProperty('--foreground', isDark ? '#E5E7EB' : '#111827');
+        root.style.setProperty('--card', cardBg);
+        root.style.setProperty('--card-foreground', sidebarFg);
+        root.style.setProperty('--muted', isDark ? '#1A1F2E' : '#F3F4F6');
+        root.style.setProperty('--muted-foreground', isDark ? '#9CA3AF' : '#6B7280');
+        root.style.setProperty('--input', isDark ? '#1A1F2E' : '#FFFFFF');
+
+        if (isDark) root.classList.add('dark');
         else root.classList.remove('dark');
       } catch {
         // noop

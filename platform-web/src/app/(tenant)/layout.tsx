@@ -62,11 +62,11 @@ export default function TenantLayout({
 
   return (
     <ThemeProvider>
-      <div className="tenant-theme flex h-screen bg-gray-100">
+      <div className="tenant-theme flex h-screen bg-background text-foreground">
         <TenantSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background text-foreground">
           <TopBar />
-          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-6 bg-background text-foreground">{children}</main>
         </div>
       </div>
     </ThemeProvider>
