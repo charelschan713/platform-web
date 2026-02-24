@@ -3,22 +3,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import platformApi from '@/lib/platformApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2, Car } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 
-type TenantVehicle = {
+type PlatformVehicle = {
   id: string;
-  registration_plate: string;
   make: string;
   model: string;
-  year?: number;
-  color?: string;
-  seats?: number;
-  luggage_capacity?: number;
-  is_active?: boolean;
+  images?: string[];
 };
 
 type VehicleType = {
@@ -36,9 +32,9 @@ type VehicleType = {
   minimum_fare: number;
   currency: string;
   is_active: boolean;
-  vehicles: {
+  requirements?: {
     id: string;
-    platform_vehicle: TenantVehicle;
+    platform_vehicle: PlatformVehicle;
   }[];
 };
 
@@ -55,7 +51,7 @@ const EMPTY_FORM = {
   hourly_rate: 0,
   minimum_fare: 0,
   currency: 'AUD',
-  vehicle_ids: [] as string[],
+  required_platform_vehicle_ids: [] as string[],
 };
 
 export default function VehicleTypesPage() {
@@ -73,18 +69,10 @@ export default function VehicleTypesPage() {
     },
   });
 
-  const { data: tenantVehicles = [] } = useQuery<TenantVehicle[]>({
-    queryKey: ['tenant-vehicles'],
+  const { data: platformVehicles = [] } = useQuery<PlatformVehicle[]>({
+    queryKey: ['platform-vehicles'],
     queryFn: async () => {
-      const res = await api.get('/tenant-vehicles');
-      return res.data;
-    },
-  });
-
-  const { data: assignedIds = [] } = useQuery<string[]>({
-    queryKey: ['assigned-vehicle-ids'],
-    queryFn: async () => {
-      const res = await api.get('/vehicle-types/assigned-vehicles');
+      const res = await platformApi.get('/platform-vehicles');
       return res.data;
     },
   });
@@ -93,7 +81,6 @@ export default function VehicleTypesPage() {
     mutationFn: () => api.post('/vehicle-types', form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
-      queryClient.invalidateQueries({ queryKey: ['assigned-vehicle-ids'] });
       setShowForm(false);
       setForm(EMPTY_FORM);
     },
@@ -103,7 +90,6 @@ export default function VehicleTypesPage() {
     mutationFn: () => api.patch(`/vehicle-types/${editingId}`, form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
-      queryClient.invalidateQueries({ queryKey: ['assigned-vehicle-ids'] });
       setShowForm(false);
       setEditingId(null);
       setForm(EMPTY_FORM);
@@ -114,7 +100,6 @@ export default function VehicleTypesPage() {
     mutationFn: (id: string) => api.delete(`/vehicle-types/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
-      queryClient.invalidateQueries({ queryKey: ['assigned-vehicle-ids'] });
     },
   });
 
@@ -133,35 +118,21 @@ export default function VehicleTypesPage() {
       hourly_rate: vt.hourly_rate,
       minimum_fare: vt.minimum_fare,
       currency: vt.currency,
-      vehicle_ids: vt.vehicles.map((v) => v.platform_vehicle.id),
+      required_platform_vehicle_ids: (vt.requirements ?? []).map(
+        (r) => r.platform_vehicle.id,
+      ),
     });
     setShowForm(true);
   };
 
-  const toggleVehicle = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      vehicle_ids: prev.vehicle_ids.includes(id)
-        ? prev.vehicle_ids.filter((v) => v !== id)
-        : [...prev.vehicle_ids, id],
+  const togglePlatformVehicle = (id: string) => {
+    setForm((p) => ({
+      ...p,
+      required_platform_vehicle_ids: p.required_platform_vehicle_ids.includes(id)
+        ? p.required_platform_vehicle_ids.filter((v) => v !== id)
+        : [...p.required_platform_vehicle_ids, id],
     }));
   };
-
-  const eligibleVehicles = tenantVehicles.filter(
-    (v: any) =>
-      v.is_active &&
-      (v.seats ?? 0) >= (form.max_passengers ?? 1) &&
-      (v.luggage_capacity ?? 0) >= (form.max_luggage ?? 0),
-  );
-
-  const ineligibleVehicles = tenantVehicles.filter(
-    (v: any) =>
-      v.is_active &&
-      ((v.seats ?? 0) < (form.max_passengers ?? 1) ||
-        (v.luggage_capacity ?? 0) < (form.max_luggage ?? 0)),
-  );
-
-  const assignedVehicleIds = new Set(assignedIds);
 
   const handleSubmit = () => {
     if (editingId) {
@@ -179,7 +150,7 @@ export default function VehicleTypesPage() {
         <div>
           <h1 className="text-2xl font-bold">Vehicle Types</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Create service tiers and assign vehicles from the platform library
+            Create service tiers based on platform vehicle standards
           </p>
         </div>
         <Button
@@ -224,7 +195,7 @@ export default function VehicleTypesPage() {
                   type="number"
                   min={0}
                   value={form.max_luggage}
-                  onChange={(e) => setForm((p) => ({ ...p, max_luggage: parseInt(e.target.value) }))}
+                  onChange={(e) => setForm((p) => ({ ...p, max_luggage: parseInt(e.target.value) || 0 }))}
                 />
               </div>
               <div className="space-y-1">
@@ -252,178 +223,82 @@ export default function VehicleTypesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label>Base Fare</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={form.base_fare}
-                    onChange={(e) => setForm((p) => ({ ...p, base_fare: parseFloat(e.target.value) }))}
-                  />
+                  <Input type="number" min={0} step={0.01} value={form.base_fare} onChange={(e) => setForm((p) => ({ ...p, base_fare: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label>
-                    Per KM Rate ($)
-                    <span className="text-xs text-gray-400 ml-1">0 = disabled</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={form.per_km_rate}
-                    onChange={(e) => setForm((p) => ({ ...p, per_km_rate: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0"
-                  />
+                  <Label>Per KM Rate ($)</Label>
+                  <Input type="number" min={0} step={0.1} value={form.per_km_rate} onChange={(e) => setForm((p) => ({ ...p, per_km_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label>
-                    Per Minute Rate ($)
-                    <span className="text-xs text-gray-400 ml-1">0 = disabled</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={form.per_minute_rate ?? 0}
-                    onChange={(e) => setForm((p) => ({ ...p, per_minute_rate: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0"
-                  />
+                  <Label>Per Minute Rate ($)</Label>
+                  <Input type="number" min={0} step={0.01} value={form.per_minute_rate ?? 0} onChange={(e) => setForm((p) => ({ ...p, per_minute_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
-                  <Label>
-                    Included KM per Hour
-                    <span className="text-xs text-gray-400 ml-1">0 = unlimited</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={form.included_km_per_hour ?? 0}
-                    onChange={(e) => setForm((p) => ({ ...p, included_km_per_hour: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0"
-                  />
+                  <Label>Included KM per Hour</Label>
+                  <Input type="number" min={0} step={1} value={form.included_km_per_hour ?? 0} onChange={(e) => setForm((p) => ({ ...p, included_km_per_hour: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
                   <Label>Extra KM Rate ($)</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={form.extra_km_rate ?? 0}
-                    onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0"
-                  />
+                  <Input type="number" min={0} step={0.1} value={form.extra_km_rate ?? 0} onChange={(e) => setForm((p) => ({ ...p, extra_km_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
                   <Label>Hourly Rate</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={form.hourly_rate}
-                    onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))}
-                  />
+                  <Input type="number" min={0} step={0.01} value={form.hourly_rate} onChange={(e) => setForm((p) => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-1">
                   <Label>Minimum Fare</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={form.minimum_fare}
-                    onChange={(e) => setForm((p) => ({ ...p, minimum_fare: parseFloat(e.target.value) }))}
-                  />
+                  <Input type="number" min={0} step={0.01} value={form.minimum_fare} onChange={(e) => setForm((p) => ({ ...p, minimum_fare: parseFloat(e.target.value) || 0 }))} />
                 </div>
               </div>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold mb-2">Assign Vehicles</p>
-              <p className="text-xs text-gray-400 mb-1">
-                Each vehicle can only belong to one type. Greyed out vehicles are already assigned.
-              </p>
-              <p className="text-xs text-gray-400 mb-3">
-                ⚠️ Set Max Passengers and Max Luggage first to filter eligible vehicles
-              </p>
+            <div className="space-y-2">
+              <Label>
+                Accepted Vehicle Models
+                <span className="text-xs text-gray-400 ml-2">
+                  Select which platform vehicles can fulfil this type
+                </span>
+              </Label>
               <Input
-                placeholder="Search vehicles..."
+                placeholder="Search platform vehicles..."
                 value={vehicleSearch}
                 onChange={(e) => setVehicleSearch(e.target.value)}
-                className="mb-3"
               />
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {eligibleVehicles.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-2">
-                    No vehicles match the requirements ({form.max_passengers}{' '}
-                    passengers, {form.max_luggage} luggage)
-                  </p>
-                ) : (
-                  eligibleVehicles
-                    .filter(
-                      (v: any) =>
-                        !vehicleSearch ||
-                        `${v.make} ${v.model} ${v.registration_plate}`
-                          .toLowerCase()
-                          .includes(vehicleSearch.toLowerCase()),
-                    )
-                    .map((v: any) => {
-                      const isAssigned =
-                        assignedVehicleIds.has(v.id) &&
-                        !form.vehicle_ids?.includes(v.id);
-                      const isSelected = form.vehicle_ids?.includes(v.id);
-                      return (
-                        <button
-                          key={v.id}
-                          type="button"
-                          disabled={isAssigned}
-                          onClick={() => toggleVehicle(v.id)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
-                            isSelected
-                              ? 'border-gray-900 bg-gray-900 text-white'
-                              : isAssigned
-                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                : 'border-gray-200 hover:border-gray-400'
-                          }`}
-                        >
-                          <span>🚗</span>
-                          <span>
-                            {v.make} {v.model}
-                          </span>
-                          <span className="text-xs opacity-60">
-                            {v.registration_plate}
-                          </span>
-                          <span className="text-xs opacity-60">
-                            👥{v.seats} 🧳{v.luggage_capacity}
-                          </span>
-                        </button>
-                      );
-                    })
-                )}
+              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                {platformVehicles
+                  .filter(
+                    (pv: any) =>
+                      !vehicleSearch ||
+                      `${pv.make} ${pv.model}`
+                        .toLowerCase()
+                        .includes(vehicleSearch.toLowerCase()),
+                  )
+                  .map((pv: any) => {
+                    const isSelected = form.required_platform_vehicle_ids.includes(
+                      pv.id,
+                    );
+                    return (
+                      <button
+                        key={pv.id}
+                        type="button"
+                        onClick={() => togglePlatformVehicle(pv.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
+                          isSelected
+                            ? 'border-gray-900 bg-gray-900 text-white'
+                            : 'border-gray-200 hover:border-gray-400'
+                        }`}
+                      >
+                        <span>🚗</span>
+                        <span>
+                          {pv.make} {pv.model}
+                        </span>
+                      </button>
+                    );
+                  })}
               </div>
-              {ineligibleVehicles.length > 0 && (
-                <div className="mt-2 pt-2 border-t">
-                  <p className="text-xs text-gray-400 mb-1">
-                    Not eligible (insufficient seats or luggage):
-                  </p>
-                  {ineligibleVehicles.map((v: any) => (
-                    <div
-                      key={v.id}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-300"
-                    >
-                      <span>🚗</span>
-                      <span>
-                        {v.make} {v.model}
-                      </span>
-                      <span>{v.registration_plate}</span>
-                      <span className="text-red-300">
-                        👥{v.seats} 🧳{v.luggage_capacity}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {form.vehicle_ids.length > 0 && (
-                <p className="text-xs text-gray-500 mt-2">
-                  {form.vehicle_ids.length} vehicle(s) selected
+              {form.required_platform_vehicle_ids.length > 0 && (
+                <p className="text-xs text-gray-500">
+                  {form.required_platform_vehicle_ids.length} vehicle model(s) selected
                 </p>
               )}
             </div>
@@ -529,23 +404,18 @@ export default function VehicleTypesPage() {
 
                 <p className="text-sm text-gray-500">👥 Max {vt.max_passengers ?? 4} passengers · 🧳 Max {vt.max_luggage} luggage</p>
 
-                <div>
-                  <p className="text-xs text-gray-400 mb-2">VEHICLES ({vt.vehicles.length})</p>
-                  {vt.vehicles.length === 0 ? (
-                    <p className="text-xs text-gray-300">No vehicles assigned</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {vt.vehicles.map((v) => (
-                        <span
-                          key={v.id}
-                          className="text-xs bg-gray-100 px-2 py-0.5 rounded-full"
-                        >
-                          {v.platform_vehicle.make} {v.platform_vehicle.model}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {vt.requirements && vt.requirements.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {vt.requirements.map((r: any) => (
+                      <span
+                        key={r.id}
+                        className="text-xs bg-gray-100 px-2 py-0.5 rounded-full"
+                      >
+                        🚗 {r.platform_vehicle.make} {r.platform_vehicle.model}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
