@@ -264,37 +264,46 @@ export default function VehicleTypesPage() {
                 value={vehicleSearch}
                 onChange={(e) => setVehicleSearch(e.target.value)}
               />
-              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                {platformVehicles
-                  .filter(
+              <div className="max-h-56 overflow-y-auto space-y-2">
+                {(() => {
+                  const filtered = platformVehicles.filter(
                     (pv: any) =>
                       !vehicleSearch ||
                       `${pv.make} ${pv.model}`
                         .toLowerCase()
                         .includes(vehicleSearch.toLowerCase()),
-                  )
-                  .map((pv: any) => {
-                    const isSelected = form.required_platform_vehicle_ids.includes(
-                      pv.id,
-                    );
-                    return (
-                      <button
-                        key={pv.id}
-                        type="button"
-                        onClick={() => togglePlatformVehicle(pv.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
-                          isSelected
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-200 hover:border-gray-400'
-                        }`}
-                      >
-                        <span>🚗</span>
-                        <span>
-                          {pv.make} {pv.model}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  );
+                  const grouped = filtered.reduce((acc: any, pv: any) => {
+                    const make = pv.make || 'Other';
+                    if (!acc[make]) acc[make] = [];
+                    acc[make].push(pv);
+                    return acc;
+                  }, {});
+                  return Object.entries(grouped).map(([make, vehicles]: [string, any]) => (
+                    <div key={make}>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{make}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {vehicles.map((pv: any) => {
+                          const isSelected = form.required_platform_vehicle_ids.includes(pv.id);
+                          return (
+                            <button
+                              key={pv.id}
+                              type="button"
+                              onClick={() => togglePlatformVehicle(pv.id)}
+                              className={`px-2.5 py-1.5 rounded-lg border text-xs transition-all ${
+                                isSelected
+                                  ? 'border-gray-900 bg-gray-900 text-white'
+                                  : 'border-gray-200 hover:border-gray-400'
+                              }`}
+                            >
+                              {pv.model}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
               {form.required_platform_vehicle_ids.length > 0 && (
                 <p className="text-xs text-gray-500">

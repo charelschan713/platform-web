@@ -28,7 +28,9 @@ import {
   Truck,
   Edit2,
   DollarSign,
+  ArrowRightLeft,
 } from 'lucide-react';
+import platformApi from '@/lib/platformApi';
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-blue-100 text-blue-700',
@@ -96,10 +98,22 @@ export default function BookingDetailPage() {
     enabled: showAssignDialog,
   });
 
-  const { data: connections = [] } = useQuery({
-    queryKey: ['active-connections'],
+  const [overrideIds, setOverrideIds] = useState<string[]>([]);
+
+  const { data: platformVehicles = [] } = useQuery({
+    queryKey: ['platform-vehicles-transfer'],
     queryFn: async () => {
-      const res = await api.get('/connections/active');
+      const res = await platformApi.get('/platform-vehicles');
+      return res.data;
+    },
+    enabled: showTransferDialog,
+  });
+
+  const { data: eligibleTenants = [] } = useQuery({
+    queryKey: ['eligible-tenants', id, overrideIds],
+    queryFn: async () => {
+      const params = overrideIds.length ? `?override_ids=${overrideIds.join(',')}` : '';
+      const res = await api.get(`/booking-transfers/${id}/eligible-tenants${params}`);
       return res.data;
     },
     enabled: showTransferDialog,
@@ -193,11 +207,9 @@ export default function BookingDetailPage() {
 
   const transferMutation = useMutation({
     mutationFn: () =>
-      api.post('/connections/transfers', {
-        booking_id: id,
+      api.post(`/booking-transfers/${id}/initiate`, {
         to_tenant_id: transferTenantId,
-        from_percentage: parseFloat(fromPct),
-        to_percentage: parseFloat(toPct),
+        override_platform_vehicle_ids: overrideIds.length ? overrideIds : undefined,
         transfer_note: transferNote || undefined,
       }),
     onSuccess: () => {
@@ -295,9 +307,15 @@ export default function BookingDetailPage() {
             </Button>
           )}
 
-          {isConfirmed && isUnassigned && (
-            <Button size="sm" variant="outline" onClick={() => setShowTransferDialog(true)}>
-              🔄 Transfer
+          {(isPending || isConfirmed) && (
+            <Button size="sm" variant="outline" onClick={() => {
+              setOverrideIds(
+                booking.vehicle_type?.requirements?.map((r: any) => r.platform_vehicle?.id).filter(Boolean) ?? []
+              );
+              setShowTransferDialog(true);
+            }}>
+              <ArrowRightLeft size={14} className="mr-1" />
+              Transfer
             </Button>
           )}
 
@@ -947,64 +965,78 @@ export default function BookingDetailPage() {
       </Dialog>
 
       <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Transfer Booking</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1">
-              <Label>Transfer To</Label>
-              <Select value={transferTenantId} onValueChange={setTransferTenantId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select operator" />
-                </SelectTrigger>
-                <SelectContent>
-                  {connections.map((conn: any) => (
-                    <SelectItem key={conn.partner.id} value={conn.partner.id}>
-                      {conn.partner.tenant_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <Label>
+                Vehicle Requirements
+                <span className="text-xs text-gray-400 ml-2">(modify for this transfer only)</span>
+              </Label>
+              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                {(() => {
+                  const grouped = platformVehicles.reduce((acc: any, pv: any) => {
+                    const make = pv.make || 'Other';
+                    if (!acc[make]) acc[make] = [];
+                    acc[make].push(pv);
+                    return acc;
+                  }, {});
+                  return Object.entries(grouped).map(([make, vehicles]: [string, any]) => (
+                    <div key={make} className="w-full">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 mt-1">{make}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {vehicles.map((pv: any) => {
+                          const isSelected = overrideIds.includes(pv.id);
+                          return (
+                            <button
+                              key={pv.id}
+                              type="button"
+                              onClick={() => {
+                                setOverrideIds((p) =>
+                                  p.includes(pv.id) ? p.filter((v) => v !== pv.id) : [...p, pv.id],
+                                );
+                                setTransferTenantId('');
+                              }}
+                              className={`text-xs px-2 py-1 rounded-lg border transition-all ${
+                                isSelected
+                                  ? 'bg-gray-900 text-white border-gray-900'
+                                  : 'border-gray-200 hover:border-gray-400'
+                              }`}
+                            >
+                              {pv.model}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+              {overrideIds.length > 0 && (
+                <p className="text-xs text-gray-500">{overrideIds.length} model(s) selected</p>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Revenue Split</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Your % (Keep)</Label>
-                  <Input
-                    type="number"
-                    value={fromPct}
-                    onChange={(e) => {
-                      setFromPct(e.target.value);
-                      setToPct((100 - parseFloat(e.target.value || '0')).toString());
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Their % (Receive)</Label>
-                  <Input
-                    type="number"
-                    value={toPct}
-                    onChange={(e) => {
-                      setToPct(e.target.value);
-                      setFromPct((100 - parseFloat(e.target.value || '0')).toString());
-                    }}
-                    min="0"
-                    max="100"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-50 rounded p-2 text-xs text-gray-600">
-                You keep: {booking.currency} ${' '}
-                {((booking.total_price * parseFloat(fromPct || '0')) / 100).toFixed(2)} · They
-                receive: {booking.currency} ${' '}
-                {((booking.total_price * parseFloat(toPct || '0')) / 100).toFixed(2)}
-              </div>
+            <div className="space-y-1">
+              <Label>Transfer To</Label>
+              {eligibleTenants.length === 0 ? (
+                <p className="text-xs text-red-500">No tenants available with matching vehicles</p>
+              ) : (
+                <Select value={transferTenantId} onValueChange={setTransferTenantId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {eligibleTenants.map((t: any) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -1018,14 +1050,10 @@ export default function BookingDetailPage() {
 
             <Button
               className="w-full"
-              disabled={
-                !transferTenantId ||
-                parseFloat(fromPct) + parseFloat(toPct) !== 100 ||
-                transferMutation.isPending
-              }
+              disabled={!transferTenantId || transferMutation.isPending}
               onClick={() => transferMutation.mutate()}
             >
-              {transferMutation.isPending ? 'Transferring...' : 'Send Transfer Request'}
+              {transferMutation.isPending ? 'Sending...' : 'Send Transfer Request'}
             </Button>
           </div>
         </DialogContent>

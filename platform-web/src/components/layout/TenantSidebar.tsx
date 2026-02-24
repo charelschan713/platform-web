@@ -18,6 +18,7 @@ import {
   Percent,
   Settings,
   LogOut,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -35,6 +36,7 @@ const navItems = [
   { href: '/service-types', label: 'Service Types', icon: Tag },
   { href: '/constants', label: 'Constants', icon: Sliders },
   { href: '/invoices', label: 'Invoices', icon: FileText },
+  { href: '/transfers', label: 'Transfers', icon: ArrowRightLeft },
   { href: '/connections', label: 'Connections', icon: Network },
   { href: '/reports', label: 'Reports', icon: BarChart2 },
   { href: '/surcharges', label: 'Surcharges', icon: Percent },
