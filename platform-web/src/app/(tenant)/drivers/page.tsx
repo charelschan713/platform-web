@@ -86,6 +86,8 @@ export default function DriversPage() {
       }
       setDialogOpen(false);
       await fetchDrivers();
+    } catch (err: any) {
+      alert(err?.response?.data?.message ?? 'Failed to save driver');
     } finally {
       setSaving(false);
     }
