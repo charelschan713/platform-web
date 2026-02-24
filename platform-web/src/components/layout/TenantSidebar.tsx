@@ -80,8 +80,8 @@ export default function TenantSidebar() {
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                 active
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-600 hover:bg-gray-100',
+                  ? 'bg-white/10 text-white'
+                  : 'text-gray-400 hover:bg-white/10 hover:text-white',
               )}
             >
               <Icon size={18} />
@@ -94,7 +94,7 @@ export default function TenantSidebar() {
       <div className="p-4 border-t">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/10 hover:text-white w-full transition-colors"
         >
           <LogOut size={18} />
           Sign Out
